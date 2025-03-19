@@ -193,8 +193,9 @@ const Usage = () => {
                                                 });
                                             }}
                                         >
-                                            Orion::resource('posts',
-                                            /App/Http/Controllers/Orion/PostController::class);
+                                            {`Orion::resource('posts',
+                                            /App/Http/Controllers/Orion/PostController::class)->middleware(['auth', 'web'])`}
+                                            ;
                                         </Snippet>
                                         <p className="mt-1 mb-1">
                                             This command ensures that
