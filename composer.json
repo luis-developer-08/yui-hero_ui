@@ -1,7 +1,7 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "luis-developer-08/yui-hero_ui",
-    "version": "v1.0.0",
+    "version": "v1.0.1",
     "type": "project",
     "description": "This setup is designed for developers who want a lightweight, modern, and efficient foundation for building Laravel applications with a React frontend powered by InertiaJs and Hero UI",
     "keywords": [
