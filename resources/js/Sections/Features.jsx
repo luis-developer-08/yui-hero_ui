@@ -3,15 +3,20 @@ import { Card, CardBody, Divider } from "@heroui/react";
 
 const Features = () => {
     const features = [
-        "✔️ React 19 + JSX – Simple, clean, and TypeScript-free",
-        "✔️ Laravel 12 + Breeze – Lightweight authentication with Inertia.js",
+        "✔️ Laravel – Laravel provides a complete ecosystem for web artisans.",
+        "✔️ Laravel Breeze – Lightweight authentication with Inertia.js.",
+        "✔️ Laravel Pulse – Delivers at-a-glance insights into your application's performance and usage.",
+        "✔️ Orion – The simplest way to create REST API with Laravel.",
         "✔️ Inertia.js – Create modern single-page React, Vue, and Svelte apps using classic server-side routing.",
-        "✔️ Orion – The simplest way to create REST API with Laravel",
-        "✔️ TanStack Query – Powerful asynchronous state management for TS/JS",
-        "✔️ Laravel-permission – Associate users with roles and permissions",
-        "✔️ TailwindCSS 4 – Modern styling with utility-first CSS",
-        "✔️ Vite-Powered – Lightning-fast HMR for smooth development",
-        "✔️ Pre-configured Testing – Includes PHPUnit & Pest",
+        "✔️ React 19 + JSX – Simple, clean, and TypeScript-free.",
+        "✔️ React Icons – Include popular icons in your React projects easily with react-icons.",
+        "✔️ TanStack Query – Powerful asynchronous state management for TS/JS.",
+        "✔️ Zustand – A small, fast, and scalable bearbones state management solution.",
+        "✔️ Laravel-Spatie-permission – Associate users with roles and permissions.",
+        "✔️ TailwindCSS 4 – Modern styling with utility-first CSS.",
+        "✔️ Vite-Powered – Lightning-fast HMR for smooth development.",
+        "✔️ Pre-configured Testing – Includes PHPUnit & Pest.",
+        "✔️ Hero UI – Beautiful, fast, and modern React UI library for building accessible and customizable web applications.",
         "✔️ Quick Setup – Get started in minutes!",
     ];
 
