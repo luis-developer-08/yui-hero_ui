@@ -1,5 +1,12 @@
 import React from "react";
-import { Card, CardBody, Divider, Snippet, addToast } from "@heroui/react";
+import {
+    Card,
+    CardBody,
+    Code,
+    Divider,
+    Snippet,
+    addToast,
+} from "@heroui/react";
 
 const GettingStarted = () => {
     return (
@@ -21,40 +28,115 @@ const GettingStarted = () => {
                                         🛠 Getting Started
                                     </h1>
                                     <Divider className="my-4" />
+
+                                    {/* Step 1: Install */}
                                     <h1 className="text-lg md:text-xl font-medium mt-2">
                                         1️⃣ Install
                                     </h1>
                                     <Snippet
                                         size="sm"
-                                        className="p-4 mt-2 mb-5 overflow-x-auto bg-slate-400/50"
+                                        className="p-4 mt-2 mb-5 bg-slate-400/50"
                                         symbol={false}
-                                        onCopy={() => {
-                                            addToast({
-                                                title: "Copied!",
-                                            });
-                                        }}
+                                        onCopy={() =>
+                                            addToast({ title: "Copied!" })
+                                        }
                                     >
-                                        composer global require
-                                        luis-developer-08/yui-installer
+                                        <span className="text-wrap overflow-x-auto">
+                                            composer global require
+                                            luis-developer-08/yui-installer
+                                        </span>
                                     </Snippet>
+
+                                    {/* Step 2: Create Project */}
                                     <h1 className="text-lg md:text-xl font-medium mt-2">
                                         2️⃣ Create a New Laravel Project
                                     </h1>
                                     <Snippet
                                         size="sm"
-                                        className="p-4 mt-2 mb-5 overflow-x-auto bg-slate-400/50"
+                                        className="p-4 mt-2 mb-5 bg-slate-400/50"
                                         symbol={false}
-                                        onCopy={() => {
-                                            addToast({
-                                                title: "Copied!",
-                                            });
-                                        }}
+                                        onCopy={() =>
+                                            addToast({ title: "Copied!" })
+                                        }
                                     >
-                                        yui new my-laravel-app
+                                        <span className="text-wrap">
+                                            yui new yui-app
+                                        </span>
                                     </Snippet>
-                                    <h1 className="text-lg md:text-xl  font-medium mt-2">
-                                        🎉 Your application is now up and
-                                        running!
+
+                                    {/* Step 3: Database Selection */}
+                                    <h1 className="text-lg md:text-xl font-medium mt-2">
+                                        3️⃣ Select Your Database
+                                    </h1>
+                                    <Code
+                                        size="sm"
+                                        className="p-4 mt-2 mb-5 bg-slate-400/50"
+                                        symbol={false}
+                                        onCopy={() =>
+                                            addToast({ title: "Copied!" })
+                                        }
+                                    >
+                                        <span className="text-wrap">
+                                            [0] sqlite <br />
+                                            [1] mysql
+                                        </span>
+                                    </Code>
+
+                                    {/* Step 4: UI Provider Selection */}
+                                    <h1 className="text-lg md:text-xl font-medium mt-2">
+                                        4️⃣ Choose a UI Provider (Select Hero UI)
+                                    </h1>
+                                    <Code
+                                        size="sm"
+                                        className="p-4 mt-2 mb-5 bg-slate-400/50"
+                                        symbol={false}
+                                        onCopy={() =>
+                                            addToast({ title: "Copied!" })
+                                        }
+                                    >
+                                        <span className="text-wrap">
+                                            [0] None <br />
+                                            [1] Hero UI
+                                        </span>
+                                    </Code>
+
+                                    {/* Step 5: Go to Project Directory */}
+                                    <h1 className="text-lg md:text-xl font-medium mt-2">
+                                        5️⃣ Navigate to Your Project Directory
+                                    </h1>
+                                    <Snippet
+                                        size="sm"
+                                        className="p-4 mt-2 mb-5 bg-slate-400/50"
+                                        symbol={false}
+                                        onCopy={() =>
+                                            addToast({ title: "Copied!" })
+                                        }
+                                    >
+                                        <span className="text-wrap">
+                                            cd yui-app
+                                        </span>
+                                    </Snippet>
+
+                                    {/* Step 6: Run Composer Dev */}
+                                    <h1 className="text-lg md:text-xl font-medium mt-2">
+                                        6️⃣ Run Server
+                                    </h1>
+                                    <Snippet
+                                        size="sm"
+                                        className="p-4 mt-2 mb-5 bg-slate-400/50"
+                                        symbol={false}
+                                        onCopy={() =>
+                                            addToast({ title: "Copied!" })
+                                        }
+                                    >
+                                        <span className="text-wrap">
+                                            composer run dev
+                                        </span>
+                                    </Snippet>
+
+                                    <h1 className="text-lg md:text-xl font-medium mt-2">
+                                        🎉 Your application is now configured
+                                        and running!
                                     </h1>
                                 </div>
                             </div>

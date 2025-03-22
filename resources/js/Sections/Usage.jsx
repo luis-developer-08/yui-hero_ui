@@ -42,8 +42,12 @@ const Usage = () => {
                                                 });
                                             }}
                                         >
-                                            php artisan make:inertia
-                                            Components/MyComponent
+                                            <div className="w-48 md:w-full">
+                                                <span className="text-wrap">
+                                                    php artisan make:inertia
+                                                    Components/MyComponent
+                                                </span>
+                                            </div>
                                         </Snippet>
                                         <p className="mt-1 mb-5">
                                             This will create a new file at
@@ -63,14 +67,18 @@ const Usage = () => {
                                                 });
                                             }}
                                         >
-                                            resources/js/Components/MyComponent.jsx
+                                            <div className="w-48 md:w-full">
+                                                <span className="text-wrap">
+                                                    resources/js/Components/MyComponent.jsx
+                                                </span>
+                                            </div>
                                         </Snippet>
                                         <h1 className="text-lg md:text-xl font-medium mt-2">
                                             ✨ Example Generated Component
                                         </h1>
                                         <Code
                                             size="sm"
-                                            className="p-4 w-full mt-2 overflow-x-auto bg-slate-400/50"
+                                            className="p-4 w-full mt-2 overflow-x-auto bg-slate-400/50 text-xs md:text-sm"
                                             symbol={false}
                                         >
                                             <span>
@@ -80,8 +88,8 @@ const Usage = () => {
                                             <br />
                                             <span>{`const MyComponent = () => {`}</span>
                                             <br />
-                                            <span>
-                                                {`return <div>{/* MyComponent component */}</div>;`}
+                                            <span className="whitespace-pre-wrap">
+                                                {`  return <div>{/* MyComponent component */}</div>;`}
                                             </span>
                                             <br />
                                             <span>{`};`}</span>
@@ -111,8 +119,12 @@ const Usage = () => {
                                                 });
                                             }}
                                         >
-                                            php artisan make:orion
-                                            PostController
+                                            <div className="w-48 md:w-full">
+                                                <span className="text-wrap">
+                                                    php artisan make:orion
+                                                    PostController
+                                                </span>
+                                            </div>
                                         </Snippet>
                                         <p className="mt-1 mb-1">
                                             This will create:
@@ -147,15 +159,17 @@ const Usage = () => {
                                                 });
                                             }}
                                         >
-                                            <span>{`app/Http/Controllers/Orion/PostController.php`}</span>
-                                            <span>{`app/Models/Post.php`}</span>
+                                            <div className="w-48 md:w-full flex flex-col">
+                                                <span className="text-wrap">{`app/Http/Controllers/Orion/PostController.php`}</span>
+                                                <span className="text-wrap">{`app/Models/Post.php`}</span>
+                                            </div>
                                         </Snippet>
                                         <h1 className="text-lg md:text-xl font-medium mt-2">
                                             ✨ Example Generated Controller
                                         </h1>
                                         <Code
                                             size="sm"
-                                            className="p-4 w-full mt-2 mb-5 overflow-x-auto bg-slate-400/50"
+                                            className="p-4 w-full mt-2 mb-5 overflow-x-auto bg-slate-400/50 text-xs md:text-md"
                                             symbol={false}
                                         >
                                             <span>{`<?php`}</span>
@@ -175,7 +189,7 @@ const Usage = () => {
                                             <br />
                                             <span>{`{`}</span>
                                             <br />
-                                            <span>{` protected $model = Post::class;`}</span>
+                                            <span className="whitespace-pre-wrap">{`    protected $model = Post::class;`}</span>
                                             <br />
                                             <span>{`}`}</span>
                                         </Code>
@@ -185,17 +199,20 @@ const Usage = () => {
                                         </h1>
                                         <Snippet
                                             symbol={false}
-                                            size="sm"
-                                            className="p-4 w-full mt-2 overflow-x-auto bg-slate-400/50"
+                                            // size="sm"
+                                            // className="p-4 w-full mt-2 bg-slate-400/50"
+                                            className="p-4 w-full mt-2 mb-5 bg-slate-400/50 text-xs md:text-sm"
                                             onCopy={() => {
                                                 addToast({
                                                     title: "Copied!",
                                                 });
                                             }}
                                         >
-                                            {`Orion::resource('posts',
-                                            /App/Http/Controllers/Orion/PostController::class)->middleware(['auth', 'web'])`}
-                                            ;
+                                            <div className="w-48 md:w-full">
+                                                <span className="text-wrap">
+                                                    {`Orion::resource('posts', /App/Http/Controllers/Orion/PostController::class)->middleware(['auth', 'web']);`}
+                                                </span>
+                                            </div>
                                         </Snippet>
                                         <p className="mt-1 mb-1">
                                             This command ensures that

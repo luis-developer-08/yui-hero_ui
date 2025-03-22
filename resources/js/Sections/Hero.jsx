@@ -1,7 +1,6 @@
 import { BsGithub } from "react-icons/bs";
 import React from "react";
 import { Card, CardBody, Image, Divider, Button } from "@heroui/react";
-import { router } from "@inertiajs/react";
 import GithubStarButton from "@/Components/GithubStarButton";
 
 const Hero = () => {
