@@ -11,7 +11,7 @@ import {
 const GettingStarted = () => {
     return (
         <div
-            className="min-h-[80vh] flex flex-col justify-center items-center w-full py-20 md:py-0"
+            className="min-h-[80vh] flex flex-col justify-center items-center w-full py-20"
             id="getting-started"
         >
             <Card
@@ -134,7 +134,7 @@ const GettingStarted = () => {
                                         </span>
                                     </Snippet>
 
-                                    <h1 className="text-lg md:text-xl font-medium mt-2">
+                                    <h1 className="text-lg md:text-xl font-medium mt-2 mb-10">
                                         🎉 Your application is now configured
                                         and running!
                                     </h1>

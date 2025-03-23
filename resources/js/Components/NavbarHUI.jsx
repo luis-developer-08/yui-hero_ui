@@ -30,26 +30,6 @@ const NavbarHUI = ({ user }) => {
           ]
         : [{ name: "Home", url: "home" }];
 
-    // // Function to handle smooth scrolling
-    // const handleLinkClick = (sectionId) => {
-    //     setCurrentUrl(sectionId);
-
-    //     if (sectionId === "dashboard") {
-    //         router.visit(`/${sectionId}`);
-    //     }
-
-    //     if (component == "Home") {
-    //         const section = document.getElementById(sectionId);
-    //         if (section) {
-    //             section.scrollIntoView({ behavior: "smooth", block: "start" });
-    //             window.history.pushState(null, "", `#${sectionId}`);
-    //         }
-    //         setIsMenuOpen(false); // Close menu on mobile after clicking
-    //     } else {
-    //         router.visit(`/#${sectionId}`);
-    //     }
-    // };
-
     return (
         <Navbar
             onMenuOpenChange={setIsMenuOpen}
@@ -97,7 +77,7 @@ const NavbarHUI = ({ user }) => {
                                     as="button"
                                     className="transition-transform w-8 h-8"
                                     maxWidth={10}
-                                    name={user.name.slice(1, 0)}
+                                    name={user.name.slice(0, 1)}
                                 />
                             </DropdownTrigger>
                             <DropdownMenu
@@ -152,7 +132,7 @@ const NavbarHUI = ({ user }) => {
                                         router.visit(route("register"))
                                     }
                                 >
-                                    Register
+                                    Sign In
                                 </Button>
                             </NavbarItem>
                         </>
@@ -183,6 +163,55 @@ const NavbarHUI = ({ user }) => {
                         </div>
                     </NavbarMenuItem>
                 ))}
+                {user ? (
+                    <>
+                        <div
+                            className="w-full"
+                            size="lg"
+                            onClick={() => {
+                                setIsMenuOpen(false);
+                                router.visit(route("profile.edit"));
+                            }}
+                        >
+                            Profile
+                        </div>
+                        <div
+                            className="w-full"
+                            size="lg"
+                            onClick={() => {
+                                setIsMenuOpen(false);
+                                router.visit(route("logout"), {
+                                    method: "post",
+                                });
+                            }}
+                        >
+                            Logout
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div
+                            className="w-full"
+                            size="lg"
+                            onClick={() => {
+                                setIsMenuOpen(false);
+                                router.visit(route("login"));
+                            }}
+                        >
+                            Login
+                        </div>
+                        <div
+                            className="w-full"
+                            size="lg"
+                            onClick={() => {
+                                setIsMenuOpen(false);
+                                router.visit(route("register"));
+                            }}
+                        >
+                            Sign In
+                        </div>
+                    </>
+                )}
             </NavbarMenu>
         </Navbar>
     );

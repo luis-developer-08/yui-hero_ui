@@ -3,7 +3,7 @@ import { Head } from "@inertiajs/react";
 
 export default function Dashboard() {
     return (
-        <>
+        <div className="min-h-screen overflow-auto">
             <Head title="Dashboard" />
 
             <div className="py-12">
@@ -15,7 +15,7 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 
