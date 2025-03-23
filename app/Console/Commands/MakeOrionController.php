@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
+use Symfony\Component\Process\Process;
 
 class MakeOrionController extends Command
 {
@@ -81,13 +82,23 @@ class MakeOrionController extends Command
             $this->info("✅ Model already exists: app/Models/{$modelName}.php");
         }
 
-        // **Create Migration with Laravel Naming Convention**
-        $timestamp = now()->format('Y_m_d_His');
+        // **Create Migration (Check by Name, Ignore Timestamp)**
         $tableName = Str::plural(Str::snake($modelName));
-        $migrationName = "{$timestamp}_create_{$tableName}_table.php";
-        $migrationPath = database_path("migrations/{$migrationName}");
+        $migrationName = "create_{$tableName}_table";
 
-        if (!File::exists($migrationPath)) {
+        // Check if migration with the same name (ignoring timestamp) already exists
+        $migrationPath = database_path('migrations');
+        $existingMigrations = collect(File::files($migrationPath))
+            ->filter(fn($file) => Str::contains($file->getFilename(), $migrationName))
+            ->count();
+
+        $migrationCreated = false;
+
+        if ($existingMigrations === 0) {
+            $timestamp = now()->format('Y_m_d_His');
+            $fullMigrationName = "{$timestamp}_{$migrationName}.php";
+            $fullMigrationPath = $migrationPath . "/{$fullMigrationName}";
+
             $migrationStub = <<<PHP
             <?php
 
@@ -113,10 +124,11 @@ class MakeOrionController extends Command
             PHP;
 
             // Create the migration file
-            File::put($migrationPath, $migrationStub);
-            $this->info("✅ Migration created: database/migrations/{$migrationName}");
+            File::put($fullMigrationPath, $migrationStub);
+            $this->info("✅ Migration created: database/migrations/{$fullMigrationName}");
+            $migrationCreated = true;
         } else {
-            $this->info("✅ Migration already exists: database/migrations/{$migrationName}");
+            $this->info("✅ Migration for '{$tableName}' already exists.");
         }
 
         // **Add Route to api.php**
@@ -159,6 +171,23 @@ class MakeOrionController extends Command
                 $this->info("✅ Route added to api.php: Orion::resource('{$routeName}', \\{$namespace}\\{$className}::class)->middleware(['auth','web']);");
             } else {
                 $this->error("⚠️ Route already exists in api.php");
+            }
+        }
+
+        // **Ask the user if they want to run migrations**
+        if ($migrationCreated) {
+            if ($this->confirm('Do you want to run php artisan migrate now?', true)) {
+                $this->info("⏳ Running migrations...");
+                $process = new Process(['php', 'artisan', 'migrate']);
+                $process->run();
+
+                if ($process->isSuccessful()) {
+                    $this->info("✅ Migrations executed successfully.");
+                } else {
+                    $this->error("❌ Failed to run migrations: " . $process->getErrorOutput());
+                }
+            } else {
+                $this->info("⚠️ Skipping migrations.");
             }
         }
     }
