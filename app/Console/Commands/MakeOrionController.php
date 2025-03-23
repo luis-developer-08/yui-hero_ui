@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class MakeOrionController extends Command
 {
     protected $signature = 'make:orion {name}';
-    protected $description = 'Generate a new Orion controller and its model if not exists';
+    protected $description = 'Generate a new Orion controller, model, and migration if not exists';
 
     public function handle()
     {
@@ -28,7 +28,7 @@ class MakeOrionController extends Command
 
         // Define namespace dynamically
         $namespace = "App\\Http\\Controllers\\Orion";
-        $namespace = rtrim($namespace, '\\'); // Remove trailing slash if root
+        $namespace = rtrim($namespace, '\\');
 
         // Orion controller template
         $controllerStub = <<<PHP
@@ -79,6 +79,44 @@ class MakeOrionController extends Command
             $this->info("✅ Model created: app/Models/{$modelName}.php");
         } else {
             $this->info("✅ Model already exists: app/Models/{$modelName}.php");
+        }
+
+        // **Create Migration with Laravel Naming Convention**
+        $timestamp = now()->format('Y_m_d_His');
+        $tableName = Str::plural(Str::snake($modelName));
+        $migrationName = "{$timestamp}_create_{$tableName}_table.php";
+        $migrationPath = database_path("migrations/{$migrationName}");
+
+        if (!File::exists($migrationPath)) {
+            $migrationStub = <<<PHP
+            <?php
+
+            use Illuminate\Database\Migrations\Migration;
+            use Illuminate\Database\Schema\Blueprint;
+            use Illuminate\Support\Facades\Schema;
+
+            return new class extends Migration
+            {
+                public function up(): void
+                {
+                    Schema::create('{$tableName}', function (Blueprint \$table) {
+                        \$table->id();
+                        \$table->timestamps();
+                    });
+                }
+
+                public function down(): void
+                {
+                    Schema::dropIfExists('{$tableName}');
+                }
+            };
+            PHP;
+
+            // Create the migration file
+            File::put($migrationPath, $migrationStub);
+            $this->info("✅ Migration created: database/migrations/{$migrationName}");
+        } else {
+            $this->info("✅ Migration already exists: database/migrations/{$migrationName}");
         }
 
         // **Add Route to api.php**
