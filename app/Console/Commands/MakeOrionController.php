@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Orion\OrionModel;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -9,8 +10,10 @@ use Symfony\Component\Process\Process;
 
 class MakeOrionController extends Command
 {
-    protected $signature = 'make:orion {name}';
-    protected $description = 'Generate a new Orion controller, model, and migration if not exists';
+    protected $signature = 'make:orion {name}
+                            {--a|--api : Create in GUI}';
+
+    protected $description = 'Generate a new Orion controller, model in Models/Orion, and migration if not exists';
 
     public function handle()
     {
@@ -22,7 +25,7 @@ class MakeOrionController extends Command
         $className = basename($name);
         $modelName = Str::singular(str_replace('Controller', '', class_basename($className)));
 
-        // Ensure the directory exists
+        // Ensure the controller directory exists
         if (!File::isDirectory($directory)) {
             File::makeDirectory($directory, 0755, true, true);
         }
@@ -38,11 +41,77 @@ class MakeOrionController extends Command
         namespace {$namespace};
 
         use Orion\Http\Controllers\Controller;
-        use App\Models\\{$modelName};
+        use Orion\Concerns\DisableAuthorization;
+        use Orion\Concerns\DisablePagination;
+        use Illuminate\Database\Eloquent\Builder;
+        use Illuminate\Http\Request;
+        use App\Models\Orion\\{$modelName};
+        use Illuminate\Support\Facades\DB;
 
         class {$className} extends Controller
         {
+            use DisableAuthorization, DisablePagination;
+
             protected \$model = {$modelName}::class;
+
+            protected function buildIndexFetchQuery(Request \$request, array \$requestedRelations): Builder
+            {
+                return {$modelName}::query()->with(\$requestedRelations);
+            }
+
+            public function index(Request \$request)
+            {
+                \$query = \$this->buildIndexFetchQuery(\$request, []);
+                \$items = \$query->get();
+
+                // Get fillable columns
+                \$fillable = (new {$modelName}())->getFillable();
+
+                // ✅ Add `id` at the beginning
+                \$fillable = array_merge(['id'], \$fillable);
+
+                // Get column types from information schema
+                \$table = (new {$modelName}())->getTable();
+                \$columns = \$this->getColumnTypes(\$table, \$fillable);
+
+                \$response = [
+                    'columns' => \$columns,
+                    'data' => \$items->map(fn(\$cols) => \$cols->only(\$fillable))
+                ];
+
+                return response()->json(\$response);
+            }
+
+            private function getColumnTypes(string \$table, array \$fillable): array
+            {
+                \$database = config('database.connections.mysql.database');
+
+                \$columns = DB::select("
+                    SELECT COLUMN_NAME, DATA_TYPE
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
+                ", [\$database, \$table]);
+
+                return collect(\$columns)
+                    ->filter(fn(\$col) => in_array(\$col->COLUMN_NAME, \$fillable))
+                    ->map(function (\$col) {
+                        return [
+                            'name' => \$col->COLUMN_NAME,
+                            'type' => \$this->mapSchemaTypeToJsonType(\$col->DATA_TYPE)
+                        ];
+                    })->values()->toArray();
+            }
+
+            private function mapSchemaTypeToJsonType(string \$type): string
+            {
+                return match (\$type) {
+                    'int', 'smallint', 'mediumint', 'bigint', 'integer' => 'integer',
+                    'decimal', 'float', 'double', 'real' => 'float',
+                    'boolean', 'tinyint' => 'boolean',
+                    'datetime', 'timestamp', 'date' => 'datetime',
+                    default => 'string',
+                };
+            }
         }
         PHP;
 
@@ -54,15 +123,20 @@ class MakeOrionController extends Command
             $this->error("⚠️ Controller already exists!");
         }
 
-        // **Check & Create Model if Not Exists**
-        $modelPath = app_path("Models/{$modelName}.php");
+        // **Check & Create Model in `Models/Orion` if Not Exists**
+        $modelDir = app_path("Models/Orion");
+        $modelPath = "{$modelDir}/{$modelName}.php";
+
+        if (!File::isDirectory($modelDir)) {
+            File::makeDirectory($modelDir, 0755, true, true);
+        }
 
         if (!File::exists($modelPath)) {
             // Model template
             $modelStub = <<<PHP
             <?php
 
-            namespace App\Models;
+            namespace App\Models\Orion;
 
             use Illuminate\Database\Eloquent\Factories\HasFactory;
             use Illuminate\Database\Eloquent\Model;
@@ -77,14 +151,18 @@ class MakeOrionController extends Command
 
             // Create the model file
             File::put($modelPath, $modelStub);
-            $this->info("✅ Model created: app/Models/{$modelName}.php");
+            $this->info("✅ Model created: app/Models/Orion/{$modelName}.php");
         } else {
-            $this->info("✅ Model already exists: app/Models/{$modelName}.php");
+            $this->info("✅ Model already exists: app/Models/Orion/{$modelName}.php");
         }
 
         // **Create Migration (Check by Name, Ignore Timestamp)**
         $tableName = Str::plural(Str::snake($modelName));
         $migrationName = "create_{$tableName}_table";
+
+        OrionModel::create([
+            'name' => $tableName
+        ]);
 
         // Check if migration with the same name (ignoring timestamp) already exists
         $migrationPath = database_path('migrations');
@@ -131,15 +209,15 @@ class MakeOrionController extends Command
             $this->info("✅ Migration for '{$tableName}' already exists.");
         }
 
-        // **Add Route to api.php**
-        $routePath = base_path('routes/api.php');
+        // **Add Route to orion-api.php**
+        $routePath = base_path('routes/orion-api.php');
         $routeName = Str::plural(Str::kebab($modelName)); // Plural and kebab-case
         $routeEntry = "\nOrion::resource('{$routeName}', \\{$namespace}\\{$className}::class)->middleware(['auth','web']);";
 
-        // Ensure `api.php` exists
+        // Ensure `orion-api.php` exists
         if (!File::exists($routePath)) {
             File::put($routePath, "<?php\n\nuse Illuminate\\Support\\Facades\\Route;\nuse Orion\\Facades\\Orion;\n\n" . $routeEntry);
-            $this->info("✅ Created api.php with Orion route.");
+            $this->info("✅ Created orion-api.php with Orion route.");
         } else {
             $routes = File::get($routePath);
 
@@ -157,24 +235,30 @@ class MakeOrionController extends Command
                     );
 
                     File::put($routePath, $updatedRoutes);
-                    $this->info("✅ Added Orion import to api.php.");
+                    $this->info("✅ Added Orion import to orion-api.php.");
                 } else {
                     // Fallback: Add both imports if Route import is missing
                     File::put($routePath, "<?php\n\n{$routeImport}\n{$orionImport}\n\n" . $routes);
-                    $this->info("✅ Added both Route and Orion imports to api.php.");
+                    $this->info("✅ Added both Route and Orion imports to orion-api.php.");
                 }
             }
 
             // **Add the Route Entry**
             if (!Str::contains($routes, $routeEntry)) {
                 File::append($routePath, "\n" . $routeEntry);
-                $this->info("✅ Route added to api.php: Orion::resource('{$routeName}', \\{$namespace}\\{$className}::class)->middleware(['auth','web']);");
+                $this->info("✅ Route added to orion-api.php: Orion::resource('{$routeName}', \\{$namespace}\\{$className}::class)->middleware(['auth','web']);");
             } else {
-                $this->error("⚠️ Route already exists in api.php");
+                $this->error("⚠️ Route already exists in orion-api.php");
             }
         }
 
+
+
         // **Ask the user if they want to run migrations**
+        if ($this->option('api')) {
+            return;
+        }
+
         if ($migrationCreated) {
             if ($this->confirm('Do you want to run php artisan migrate now?', true)) {
                 $this->info("⏳ Running migrations...");

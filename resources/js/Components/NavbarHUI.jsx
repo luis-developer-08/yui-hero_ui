@@ -48,7 +48,6 @@ const NavbarHUI = ({ user }) => {
                     {menuItems.map((item, index) => (
                         <NavbarItem key={`${item.url}-${index}`}>
                             <Link
-                                onPress={() => handleLinkClick(item.url)}
                                 className={`hover:bg-blue-600 duration-500 hover:text-white hover:cursor-pointer w-full px-4 py-2 rounded-md transition ${
                                     route().current() == item.url
                                         ? "bg-blue-700 text-white"

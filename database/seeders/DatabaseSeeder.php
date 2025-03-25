@@ -23,7 +23,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolePermissionSeeder::class,
             AdminUserSeeder::class,
-            GuestUserSeeder::class
+            GuestUserSeeder::class,
+            OrionModelsSeeder::class
         ]);
     }
 }

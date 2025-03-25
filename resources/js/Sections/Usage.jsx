@@ -50,7 +50,7 @@ const Usage = () => {
                                         </Snippet>
 
                                         <p className="mt-2">Creates:</p>
-                                        <Snippet
+                                        <Code
                                             size="sm"
                                             className="p-4 w-full mt-2 bg-slate-400/50"
                                             symbol={false}
@@ -58,7 +58,7 @@ const Usage = () => {
                                             <div className="w-48 md:w-full text-wrap">
                                                 resources/js/Components/MyComponent.jsx
                                             </div>
-                                        </Snippet>
+                                        </Code>
 
                                         <h2 className="text-lg md:text-xl font-medium mt-4">
                                             ✨ Example Generated Component
@@ -148,13 +148,13 @@ export default MyComponent;`}
                                         </Snippet>
 
                                         <p className="mt-2">Creates:</p>
-                                        <Snippet
+                                        <Code
                                             size="sm"
                                             className="p-4 w-full mt-2 bg-slate-400/50"
                                             symbol={false}
                                         >
                                             resources/js/Pages/Dashboard.jsx
-                                        </Snippet>
+                                        </Code>
 
                                         <p className="mt-2">
                                             You can also create nested folders:
@@ -174,7 +174,7 @@ export default MyComponent;`}
                                         </Snippet>
 
                                         <p className="mt-2">Creates:</p>
-                                        <Snippet
+                                        <Code
                                             size="sm"
                                             className="p-4 w-full mt-2 bg-slate-400/50"
                                             symbol={false}
@@ -182,7 +182,7 @@ export default MyComponent;`}
                                             <div className="w-48 md:w-full text-wrap">
                                                 resources/js/Components/Auth/Login.jsx
                                             </div>
-                                        </Snippet>
+                                        </Code>
 
                                         <h1 className="text-lg md:text-xl font-medium mt-4">
                                             🚀 Smart Behavior
