@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
     Table,
     TableHeader,
@@ -15,11 +15,15 @@ import useOrionFetch from "@/Hooks/useOrionFetch";
 import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
 import useOrionDelete from "@/Hooks/useOrionDelete";
 import { useQueryClient } from "@tanstack/react-query";
+import useDynamicFormStore from "@/ZustandStores/useDynamicFormStore";
+import useSelectedRowStore from "@/ZustandStores/useSelectedRowStore";
 
 const DynamicTable = () => {
     const { selectedRow } = useOrionModelStore();
     const { data, isLoading, isError } = useOrionFetch(selectedRow);
     const queryClient = useQueryClient();
+    const { openForm, setMethod } = useDynamicFormStore();
+    const { setSelectedRowData } = useSelectedRowStore();
 
     const { mutate: deleteItem, isLoading: isDeleting } =
         useOrionDelete(selectedRow);
@@ -101,7 +105,15 @@ const DynamicTable = () => {
                             </TableCell>
                         ))}
                         <TableCell className="flex justify-end gap-1">
-                            <Button color="success" size="sm">
+                            <Button
+                                color="success"
+                                size="sm"
+                                onPress={() => {
+                                    setSelectedRowData(item);
+                                    setMethod("patch");
+                                    openForm();
+                                }}
+                            >
                                 Edit
                             </Button>
                             <Button

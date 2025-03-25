@@ -12,13 +12,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import CreateTableForm from "@/Components/Forms/CreateTableForm";
 import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
 import DynamicForm from "@/Components/Forms/DynamicForm";
+import useDynamicFormStore from "@/ZustandStores/useDynamicFormStore";
+import useSelectedRowStore from "@/ZustandStores/useSelectedRowStore";
 
 export default function Dashboard() {
     const { data, isLoading, isError } = useOrionFetch("orion-models");
-
     const [addingModel, setAddingModel] = useState(false);
-    const [addingRow, setAddingRow] = useState(false);
+    const { isOpen, openForm, closeForm, setMethod } = useDynamicFormStore();
     const { selectedRow } = useOrionModelStore();
+    const { clearSelectedRowData } = useSelectedRowStore();
 
     const contentVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -77,13 +79,13 @@ export default function Dashboard() {
                                                 <h2 className="text-xl font-semibold">
                                                     {selectedRow}
                                                 </h2>
-                                                {addingRow ? (
+                                                {isOpen ? (
                                                     <Button
                                                         color="danger"
                                                         className="rounded-md"
                                                         size="sm"
                                                         onPress={() =>
-                                                            setAddingRow(false)
+                                                            closeForm()
                                                         }
                                                     >
                                                         <AiOutlineClose />
@@ -93,18 +95,18 @@ export default function Dashboard() {
                                                         color="primary"
                                                         className="rounded-md"
                                                         size="sm"
-                                                        onPress={() =>
-                                                            setAddingRow(true)
-                                                        }
+                                                        onPress={() => {
+                                                            clearSelectedRowData();
+                                                            setMethod("post");
+                                                            openForm();
+                                                        }}
                                                     >
                                                         <AiOutlinePlus />
                                                     </Button>
                                                 )}
                                             </div>
-                                            {addingRow ? (
-                                                <DynamicForm
-                                                    setAddingRow={setAddingRow}
-                                                />
+                                            {isOpen ? (
+                                                <DynamicForm />
                                             ) : (
                                                 <DynamicTable />
                                             )}
@@ -119,7 +121,6 @@ export default function Dashboard() {
                         <div className="flex-1 w-full">
                             <OrionModelsTable
                                 setAddingModel={setAddingModel}
-                                setAddingRow={setAddingRow}
                                 isLoading={isLoading}
                                 isError={isError}
                                 data={data}

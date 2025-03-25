@@ -10,15 +10,11 @@ import {
     Spinner,
 } from "@heroui/react";
 import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
+import useDynamicFormStore from "@/ZustandStores/useDynamicFormStore";
 
-const OrionModels = ({
-    data = [],
-    isLoading,
-    isError,
-    setAddingModel,
-    setAddingRow,
-}) => {
+const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
     const { selectedRow, setSelectedRow } = useOrionModelStore();
+    const { closeForm } = useDynamicFormStore();
 
     // Handle selection and store the "name" in Zustand
     const handleSelectionChange = (keys) => {
@@ -73,7 +69,7 @@ const OrionModels = ({
                             key={String(item.id)}
                             onClick={() => {
                                 setAddingModel(false);
-                                setAddingRow(false);
+                                closeForm();
                             }}
                             className="cursor-pointer"
                         >

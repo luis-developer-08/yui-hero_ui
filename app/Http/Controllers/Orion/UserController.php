@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
+// use Orion\Http\Requests\Request;
 
 class UserController extends Controller
 {
@@ -34,6 +35,49 @@ class UserController extends Controller
             'user' => $user
         ], 201);
     }
+
+    public function update(Request $request, ...$args)
+    {
+        $data = $request->all();
+
+        // ✅ Extract the user model from $args
+        $user = User::find($args[0]);
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found.'], 404);
+        }
+
+        // ✅ Hash the password if included
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        }
+
+        // ✅ Update the user model
+        $user->update($data);
+
+        return response()->json([
+            'message' => 'User updated successfully!',
+            'user' => $user
+        ], 200);
+    }
+
+    // public function update(Request $request, ...$args)
+    // {
+    //     $data = $request->all();
+
+    //     // ✅ Hash the password if included
+    //     if (isset($data['password'])) {
+    //         $data['password'] = Hash::make($data['password']);
+    //     }
+
+    //     // ✅ Update the user model
+    //     $user->update($data);
+
+    //     return response()->json([
+    //         'message' => 'User updated successfully!',
+    //         'user' => $user
+    //     ], 200);
+    // }
 
     protected function buildIndexFetchQuery(Request $request, array $requestedRelations): Builder
     {

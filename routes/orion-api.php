@@ -8,3 +8,6 @@ use Orion\Facades\Orion;
 Orion::resource('orion-models', OrionModelController::class)->middleware(['auth', 'web']);
 Orion::resource('users', \App\Http\Controllers\Orion\UserController::class)->middleware(['auth', 'web']);
 Route::post('generate-table', [TableGeneratorController::class, 'generate'])->middleware(['auth', 'web']);
+
+
+Orion::resource('products', \App\Http\Controllers\Orion\ProductController::class)->middleware(['auth','web']);
