@@ -36,9 +36,11 @@ export default function Dashboard() {
         <div className="min-h-screen overflow-auto-y py-5">
             <Head title="Dashboard" />
 
-            <SectionCard>
+            <SectionCard>You are Login!!</SectionCard>
+
+            {/* Ongoing updates use at your own risk */}
+            {/* <SectionCard>
                 <div className="grid grid-cols-6 md:grid-cols-12 gap-3 md:gap-5 items-center justify-center h-[75vh]">
-                    {/* Main Table Section */}
                     <div className="flex flex-col col-span-6 md:col-span-9 h-full w-full">
                         <div className="flex-1 w-full h-full">
                             <AnimatePresence mode="wait">
@@ -113,7 +115,6 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Sidebar Section */}
                     <div className="flex flex-col col-span-6 md:col-span-3 h-full w-full">
                         <div className="flex-1 w-full">
                             <OrionModelsTable
@@ -125,7 +126,6 @@ export default function Dashboard() {
                             />
                         </div>
 
-                        {/* Buttons with AnimatePresence */}
                         <AnimatePresence mode="wait">
                             {addingModel ? (
                                 <motion.div
@@ -173,7 +173,7 @@ export default function Dashboard() {
                         </AnimatePresence>
                     </div>
                 </div>
-            </SectionCard>
+            </SectionCard> */}
         </div>
     );
 }

@@ -227,14 +227,14 @@ For more details on YUI, visit the official [YUI Website](https://yui-app.balbue
 
 ## 🤝 Contributing
 
-We welcome contributions! Check out the [Laravel contribution guide](https://laravel.com/docs/contributions) to get involved.
+We welcome contributions! Check out the [Yui Installer contribution guide](https://github.com/luis-developer-08/yui-installer/blob/main/CONTRIBUTING.md) to get involved.
 
 ## 📜 Code of Conduct
 
-Be kind and respectful. Please follow Laravel's [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Be kind and respectful. Please follow Yui's [Code of Conduct](https://github.com/luis-developer-08/yui-installer/blob/main/CODE_OF_CONDUCT.md).
 
 ## ⚖️ License
 
-This starter kit is **open-source** under the **MIT license**.
+This installer is **open-source** under the **MIT license**.
 
 ---
