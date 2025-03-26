@@ -8,6 +8,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-
-
 require __DIR__ . '/orion-api.php';

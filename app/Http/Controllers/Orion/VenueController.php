@@ -7,38 +7,49 @@ use Orion\Concerns\DisableAuthorization;
 use Orion\Concerns\DisablePagination;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use App\Models\Orion\Product;
+use App\Models\Orion\Venue;
 use Illuminate\Support\Facades\DB;
 
-class ProductController extends Controller
+class VenueController extends Controller
 {
     use DisableAuthorization, DisablePagination;
 
-    protected $model = Product::class;
+    protected $model = Venue::class;
 
     protected function buildIndexFetchQuery(Request $request, array $requestedRelations): Builder
     {
-        return Product::query()->with($requestedRelations);
+        return Venue::query()->with($requestedRelations);
     }
 
     public function index(Request $request)
     {
         $query = $this->buildIndexFetchQuery($request, []);
-        $items = $query->get();
+
+        $perPage = $request->get('per_page', 10);
+        // Select only id, name, and email (exclude sensitive data)
+        $items = $query->paginate($perPage);
 
         // Get fillable columns
-        $fillable = (new Product())->getFillable();
+        $fillable = (new Venue())->getFillable();
 
         // ✅ Add `id` at the beginning
         $fillable = array_merge(['id'], $fillable);
 
         // Get column types from information schema
-        $table = (new Product())->getTable();
+        $table = (new Venue())->getTable();
         $columns = $this->getColumnTypes($table, $fillable);
 
         $response = [
             'columns' => $columns,
-            'data' => $items->map(fn($cols) => $cols->only($fillable))
+            'data' => $items->map(fn($cols) => $cols->only($fillable)),
+            'pagination' => [                         // ✅ Pagination metadata
+                'total' => $items->total(),
+                'per_page' => $items->perPage(),
+                'current_page' => $items->currentPage(),
+                'last_page' => $items->lastPage(),
+                'from' => $items->firstItem(),
+                'to' => $items->lastItem(),
+            ]
         ];
 
         return response()->json($response);

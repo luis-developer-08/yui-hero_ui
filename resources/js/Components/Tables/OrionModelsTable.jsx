@@ -8,9 +8,15 @@ import {
     TableCell,
     getKeyValue,
     Spinner,
+    Dropdown,
+    DropdownTrigger,
+    Button,
+    DropdownMenu,
+    DropdownItem,
 } from "@heroui/react";
 import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
 import useDynamicFormStore from "@/ZustandStores/useDynamicFormStore";
+import { FaEllipsisV } from "react-icons/fa";
 
 const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
     const { selectedRow, setSelectedRow } = useOrionModelStore();
@@ -48,9 +54,17 @@ const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
             color="primary"
             removeWrapper
             isCompact
+            isHeaderSticky
         >
             <TableHeader>
                 <TableColumn>Existing Models</TableColumn>
+                {isLoading ? (
+                    <></>
+                ) : (
+                    <TableColumn className="flex justify-end items-center">
+                        Action
+                    </TableColumn>
+                )}
             </TableHeader>
             {isLoading ? (
                 <TableBody>
@@ -71,10 +85,41 @@ const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
                                 setAddingModel(false);
                                 closeForm();
                             }}
-                            className="cursor-pointer"
+                            className="cursor-pointer p-0"
                         >
-                            <TableCell className="rounded-md">
+                            <TableCell>
                                 <span className="capitalize">{item.name}</span>
+                            </TableCell>
+                            <TableCell className="flex justify-end items-center">
+                                <Dropdown
+                                    className="flex justify-end items-center m-0"
+                                    placement="bottom-end"
+                                >
+                                    <DropdownTrigger>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="border-none"
+                                        >
+                                            <FaEllipsisV className="text-gray-500" />
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu aria-label="Static Actions">
+                                        <DropdownItem
+                                            key="edit"
+                                            color="success"
+                                        >
+                                            Edit Model
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            key="delete"
+                                            className="text-danger"
+                                            color="danger"
+                                        >
+                                            Delete Model
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                </Dropdown>
                             </TableCell>
                         </TableRow>
                     )}

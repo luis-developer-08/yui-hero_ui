@@ -61,24 +61,6 @@ class UserController extends Controller
         ], 200);
     }
 
-    // public function update(Request $request, ...$args)
-    // {
-    //     $data = $request->all();
-
-    //     // ✅ Hash the password if included
-    //     if (isset($data['password'])) {
-    //         $data['password'] = Hash::make($data['password']);
-    //     }
-
-    //     // ✅ Update the user model
-    //     $user->update($data);
-
-    //     return response()->json([
-    //         'message' => 'User updated successfully!',
-    //         'user' => $user
-    //     ], 200);
-    // }
-
     protected function buildIndexFetchQuery(Request $request, array $requestedRelations): Builder
     {
         return User::query()->with($requestedRelations);
@@ -86,21 +68,44 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
+        // ✅ Extract search query from the nested payload
+        $searchQuery = $request->input('search.value', '');
+        $perPage = $request->get('per_page', 10);
+
+        // ✅ Build the base query
         $query = $this->buildIndexFetchQuery($request, []);
 
-        // Select only name and email (exclude password)
-        $items = $query->select(['id', 'name', 'email'])->get();
+        // ✅ Apply search filtering if search.value exists
+        if (!empty($searchQuery)) {
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('name', 'LIKE', "%{$searchQuery}%")
+                    ->orWhere('email', 'LIKE', "%{$searchQuery}%")
+                    ->orWhere('id', 'LIKE', "%{$searchQuery}%");
+            });
+        }
 
-        // Return only name and email in the columns section
+        // ✅ Select the desired columns and paginate
+        $items = $query->select(['id', 'name', 'email'])->paginate($perPage);
+
+        // ✅ Define the table columns
         $columns = [
             ['name' => 'id', 'type' => 'integer'],
             ['name' => 'name', 'type' => 'string'],
             ['name' => 'email', 'type' => 'string']
         ];
 
+        // ✅ Prepare the response with pagination and search results
         $response = [
             'columns' => $columns,
-            'data' => $items->map(fn($user) => $user->only(['id', 'name', 'email']))
+            'data' => $items->items(),                // ✅ Paginated search results
+            'pagination' => [                         // ✅ Pagination metadata
+                'total' => $items->total(),
+                'per_page' => $items->perPage(),
+                'current_page' => $items->currentPage(),
+                'last_page' => $items->lastPage(),
+                'from' => $items->firstItem(),
+                'to' => $items->lastItem(),
+            ]
         ];
 
         return response()->json($response);
@@ -117,5 +122,10 @@ class UserController extends Controller
             'boolean' => 'boolean',
             default => 'string',
         };
+    }
+
+    public function searchableBy(): array
+    {
+        return ['name', 'email'];
     }
 }

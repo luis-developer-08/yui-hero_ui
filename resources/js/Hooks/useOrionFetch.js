@@ -7,6 +7,7 @@ const useOrionFetch = (model, queryParams = {}, options = {}) => {
         const url = `/api/${model}${queryString ? `?${queryString}` : ""}`;
 
         const { data } = await axios.get(url);
+
         return data ?? [];
     };
 

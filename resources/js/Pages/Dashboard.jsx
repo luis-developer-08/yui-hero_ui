@@ -1,19 +1,19 @@
-import { AiOutlineClose } from "react-icons/ai";
-import { AiOutlinePlus } from "react-icons/ai";
+import { AiOutlineSearch, AiOutlineClose, AiOutlinePlus } from "react-icons/ai";
 import MainLayout from "@/Layouts/MainLayout";
 import { Head } from "@inertiajs/react";
 import SectionCard from "@/Components/SectionCard";
 import OrionModelsTable from "@/Components/Tables/OrionModelsTable";
-import { Button } from "@heroui/react";
+import { Button, Input } from "@heroui/react";
 import useOrionFetch from "@/Hooks/useOrionFetch";
 import DynamicTable from "@/Components/Tables/DynamicTable";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CreateTableForm from "@/Components/Forms/CreateTableForm";
 import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
 import DynamicForm from "@/Components/Forms/DynamicForm";
 import useDynamicFormStore from "@/ZustandStores/useDynamicFormStore";
 import useSelectedRowStore from "@/ZustandStores/useSelectedRowStore";
+import _ from "lodash"; // ✅ Import lodash
 
 export default function Dashboard() {
     const { data, isLoading, isError } = useOrionFetch("orion-models");
@@ -21,6 +21,23 @@ export default function Dashboard() {
     const { isOpen, openForm, closeForm, setMethod } = useDynamicFormStore();
     const { selectedRow } = useOrionModelStore();
     const { clearSelectedRowData } = useSelectedRowStore();
+
+    const [filterValue, setFilterValue] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // ✅ Debounced handler
+    const debouncedFilterChange = useCallback(
+        _.debounce((value) => {
+            setCurrentPage(1);
+            setFilterValue(value);
+        }, 500),
+        []
+    );
+
+    const handleInputChange = (e) => {
+        const value = e.target.value;
+        debouncedFilterChange(value);
+    };
 
     const contentVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -38,9 +55,6 @@ export default function Dashboard() {
         <div className="min-h-screen overflow-auto-y py-5">
             <Head title="Dashboard" />
 
-            {/* <SectionCard>You are Login!!</SectionCard> */}
-
-            {/* Ongoing updates use at your own risk */}
             <SectionCard>
                 <div className="grid grid-cols-6 md:grid-cols-12 gap-3 md:gap-5 items-center justify-center h-[75vh]">
                     <div className="flex flex-col col-span-6 md:col-span-9 h-full w-full">
@@ -54,7 +68,7 @@ export default function Dashboard() {
                                         animate="visible"
                                         exit="exit"
                                         transition={{
-                                            duration: 0.4,
+                                            duration: 0.2,
                                             ease: "easeInOut",
                                         }}
                                         className="h-full"
@@ -69,7 +83,7 @@ export default function Dashboard() {
                                         animate="visible"
                                         exit="exit"
                                         transition={{
-                                            duration: 0.4,
+                                            duration: 0.2,
                                             ease: "easeInOut",
                                         }}
                                         className=" h-full flex flex-col gap-1"
@@ -99,6 +113,7 @@ export default function Dashboard() {
                                                             clearSelectedRowData();
                                                             setMethod("post");
                                                             openForm();
+                                                            setFilterValue("");
                                                         }}
                                                     >
                                                         <AiOutlinePlus />
@@ -106,9 +121,60 @@ export default function Dashboard() {
                                                 )}
                                             </div>
                                             {isOpen ? (
-                                                <DynamicForm />
+                                                <motion.div
+                                                    key="dynamic-form"
+                                                    variants={contentVariants}
+                                                    initial="hidden"
+                                                    animate="visible"
+                                                    exit="exit"
+                                                    transition={{
+                                                        duration: 0.2,
+                                                        ease: "easeInOut",
+                                                    }}
+                                                    className="h-full"
+                                                >
+                                                    <DynamicForm />
+                                                </motion.div>
                                             ) : (
-                                                <DynamicTable />
+                                                <>
+                                                    <div className="flex mb-2">
+                                                        <Input
+                                                            type="text"
+                                                            placeholder="Search..."
+                                                            onChange={
+                                                                handleInputChange
+                                                            } // ✅ Debounced input
+                                                            endContent={
+                                                                <AiOutlineSearch />
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <motion.div
+                                                        key={`dynamic-table-${selectedRow}`}
+                                                        variants={
+                                                            contentVariants
+                                                        }
+                                                        initial="hidden"
+                                                        animate="visible"
+                                                        exit="exit"
+                                                        transition={{
+                                                            duration: 0.2,
+                                                            ease: "easeInOut",
+                                                        }}
+                                                    >
+                                                        <DynamicTable
+                                                            filterValue={
+                                                                filterValue
+                                                            }
+                                                            currentPage={
+                                                                currentPage
+                                                            }
+                                                            setCurrentPage={
+                                                                setCurrentPage
+                                                            }
+                                                        />
+                                                    </motion.div>
+                                                </>
                                             )}
                                         </div>
                                     </motion.div>
