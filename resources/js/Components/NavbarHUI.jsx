@@ -18,6 +18,7 @@ import ApplicationLogo from "./ApplicationLogo";
 import useLatestVersion from "@/Hooks/useLatestVersion";
 import GithubStarButton from "./GithubStarButton";
 import { router, Link } from "@inertiajs/react";
+import useGravatar from "@/Hooks/useGravatar";
 
 const NavbarHUI = ({ user }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,6 +30,8 @@ const NavbarHUI = ({ user }) => {
               { name: "Dashboard", url: "dashboard" },
           ]
         : [{ name: "Home", url: "home" }];
+
+    const gravatarUrl = useGravatar(user?.email, 200);
 
     return (
         <Navbar
@@ -75,8 +78,8 @@ const NavbarHUI = ({ user }) => {
                                     isBordered
                                     as="button"
                                     className="transition-transform w-8 h-8"
-                                    maxWidth={10}
                                     name={user.name.slice(0, 1)}
+                                    src={gravatarUrl}
                                 />
                             </DropdownTrigger>
                             <DropdownMenu

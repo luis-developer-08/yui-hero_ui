@@ -62,7 +62,10 @@ class MakeOrionController extends Command
             public function index(Request \$request)
             {
                 \$query = \$this->buildIndexFetchQuery(\$request, []);
-                \$items = \$query->get();
+
+                \$perPage = \$request->get('per_page', 10);
+                // Select only id, name, and email (exclude sensitive data)
+                \$items = \$query->paginate(\$perPage);
 
                 // Get fillable columns
                 \$fillable = (new {$modelName}())->getFillable();
@@ -76,7 +79,15 @@ class MakeOrionController extends Command
 
                 \$response = [
                     'columns' => \$columns,
-                    'data' => \$items->map(fn(\$cols) => \$cols->only(\$fillable))
+                    'data' => \$items->map(fn(\$cols) => \$cols->only(\$fillable)),
+                    'pagination' => [                         // ✅ Pagination metadata
+                        'total' => \$items->total(),
+                        'per_page' => \$items->perPage(),
+                        'current_page' => \$items->currentPage(),
+                        'last_page' => \$items->lastPage(),
+                        'from' => \$items->firstItem(),
+                        'to' => \$items->lastItem(),
+                    ]
                 ];
 
                 return response()->json(\$response);
@@ -84,20 +95,35 @@ class MakeOrionController extends Command
 
             private function getColumnTypes(string \$table, array \$fillable): array
             {
-                \$database = config('database.connections.mysql.database');
+                \$connection = config('database.default');
 
-                \$columns = DB::select("
-                    SELECT COLUMN_NAME, DATA_TYPE
-                    FROM INFORMATION_SCHEMA.COLUMNS
-                    WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
-                ", [\$database, \$table]);
+                if (\$connection === 'mysql') {
+                    \$database = config('database.connections.mysql.database');
+
+                    \$columns = DB::select("
+                        SELECT COLUMN_NAME AS name, DATA_TYPE AS type
+                        FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
+                    ", [\$database, \$table]);
+                } elseif (\$connection === 'sqlite') {
+                    \$columns = DB::select("
+                        PRAGMA table_info(\$table)
+                    ");
+
+                    \$columns = collect(\$columns)->map(fn(\$col) => (object)[
+                        'name' => \$col->name,
+                        'type' => \$col->type
+                    ])->toArray();
+                } else {
+                    throw new \Exception("Unsupported database connection: \$connection");
+                }
 
                 return collect(\$columns)
-                    ->filter(fn(\$col) => in_array(\$col->COLUMN_NAME, \$fillable))
+                    ->filter(fn(\$col) => in_array(\$col->name, \$fillable))
                     ->map(function (\$col) {
                         return [
-                            'name' => \$col->COLUMN_NAME,
-                            'type' => \$this->mapSchemaTypeToJsonType(\$col->DATA_TYPE)
+                            'name' => \$col->name,
+                            'type' => \$this->mapSchemaTypeToJsonType(\$col->type)
                         ];
                     })->values()->toArray();
             }

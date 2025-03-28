@@ -8,17 +8,19 @@ import {
     TableCell,
     getKeyValue,
     Spinner,
+    Dropdown,
+    DropdownTrigger,
+    Button,
+    DropdownMenu,
+    DropdownItem,
 } from "@heroui/react";
 import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
+import useDynamicFormStore from "@/ZustandStores/useDynamicFormStore";
+import { FaEllipsisV } from "react-icons/fa";
 
-const OrionModels = ({
-    data = [],
-    isLoading,
-    isError,
-    setAddingModel,
-    setAddingRow,
-}) => {
+const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
     const { selectedRow, setSelectedRow } = useOrionModelStore();
+    const { closeForm } = useDynamicFormStore();
 
     // Handle selection and store the "name" in Zustand
     const handleSelectionChange = (keys) => {
@@ -52,9 +54,17 @@ const OrionModels = ({
             color="primary"
             removeWrapper
             isCompact
+            isHeaderSticky
         >
             <TableHeader>
                 <TableColumn>Existing Models</TableColumn>
+                {isLoading ? (
+                    <></>
+                ) : (
+                    <TableColumn className="flex justify-end items-center">
+                        Action
+                    </TableColumn>
+                )}
             </TableHeader>
             {isLoading ? (
                 <TableBody>
@@ -73,12 +83,43 @@ const OrionModels = ({
                             key={String(item.id)}
                             onClick={() => {
                                 setAddingModel(false);
-                                setAddingRow(false);
+                                closeForm();
                             }}
-                            className="cursor-pointer"
+                            className="cursor-pointer p-0"
                         >
-                            <TableCell className="rounded-md">
+                            <TableCell>
                                 <span className="capitalize">{item.name}</span>
+                            </TableCell>
+                            <TableCell className="flex justify-end items-center">
+                                <Dropdown
+                                    className="flex justify-end items-center m-0"
+                                    placement="bottom-end"
+                                >
+                                    <DropdownTrigger>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="border-none"
+                                        >
+                                            <FaEllipsisV className="text-gray-500" />
+                                        </Button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu aria-label="Static Actions">
+                                        <DropdownItem
+                                            key="edit"
+                                            color="success"
+                                        >
+                                            Edit Model
+                                        </DropdownItem>
+                                        <DropdownItem
+                                            key="delete"
+                                            className="text-danger"
+                                            color="danger"
+                                        >
+                                            Delete Model
+                                        </DropdownItem>
+                                    </DropdownMenu>
+                                </Dropdown>
                             </TableCell>
                         </TableRow>
                     )}
