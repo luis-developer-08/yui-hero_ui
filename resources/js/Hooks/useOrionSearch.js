@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 const useOrionSearch = (
     model,
     queryParams = {},
     searchParams = "",
+    trashed = false,
     options = {}
 ) => {
     const queryString = new URLSearchParams(queryParams).toString();
@@ -13,8 +13,11 @@ const useOrionSearch = (
     // const url = searchParams
     //     ? `/api/${model}/search` // Force page=1 when filtering
     //     : `/api/${model}/search${queryString ? `?${queryString}` : ""}`; // For pagination
-
-    const url = `/api/${model}/search${queryString ? `?${queryString}` : ""}`; // For pagination
+    //
+    // const url = `/api/${model}/search?only_trashed=true`; // For pagination
+    const url = `/api/${model}/search${
+        queryString ? `?only_trashed=${trashed}&${queryString}` : ""
+    }`; // For pagination
 
     const fetchData = async () => {
         const payload = {
@@ -31,7 +34,7 @@ const useOrionSearch = (
     };
 
     return useQuery({
-        queryKey: ["orion", [model, queryParams, searchParams]],
+        queryKey: ["orion", [model, queryParams, searchParams, trashed]],
         queryFn: fetchData,
         ...options,
     });

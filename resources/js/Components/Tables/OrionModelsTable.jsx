@@ -13,12 +13,24 @@ import {
     Button,
     DropdownMenu,
     DropdownItem,
+    addToast,
 } from "@heroui/react";
 import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
 import useDynamicFormStore from "@/ZustandStores/useDynamicFormStore";
 import { FaEllipsisV } from "react-icons/fa";
+import useOrionDelete from "@/Hooks/useOrionDelete";
+import { useQueryClient } from "@tanstack/react-query";
+import useDeleteTable from "@/Hooks/useDeleteTable";
 
-const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
+const OrionModelsTable = ({
+    data = [],
+    isLoading,
+    isError,
+    setAddingModel,
+    setSelectedKeys,
+    setTotalSelectedRows,
+}) => {
+    const queryClient = useQueryClient();
     const { selectedRow, setSelectedRow } = useOrionModelStore();
     const { closeForm } = useDynamicFormStore();
 
@@ -36,6 +48,36 @@ const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
         if (selectedItem) {
             setSelectedRow(selectedItem.name);
         }
+    };
+
+    const {
+        mutate: deleteTable,
+        isLoading: isDeletingTable,
+        isError: isDeletingTableError,
+        error,
+    } = useDeleteTable({
+        onSuccess: () => {
+            addToast({
+                title: "Success",
+                description: "Table removed successfully!",
+            });
+
+            queryClient.invalidateQueries(["orion", "orion-models"]);
+            setSelectedRow("users"); // Reset to default table
+        },
+        onError: (error) => {
+            addToast({
+                title: "Error",
+                description:
+                    error.response?.data?.message || "Failed to delete table",
+                color: "danger",
+            });
+            console.error("❌ Failed to remove table:", error.message);
+        },
+    });
+
+    const handleDelete = (tableName) => {
+        deleteTable(tableName);
     };
 
     // Map the stored "name" back to its "id" for proper selection
@@ -61,9 +103,7 @@ const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
                 {isLoading ? (
                     <></>
                 ) : (
-                    <TableColumn className="flex justify-end items-center">
-                        Action
-                    </TableColumn>
+                    <TableColumn className="flex justify-end items-center"></TableColumn>
                 )}
             </TableHeader>
             {isLoading ? (
@@ -82,6 +122,8 @@ const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
                         <TableRow
                             key={String(item.id)}
                             onClick={() => {
+                                setSelectedKeys(new Set());
+                                setTotalSelectedRows(0);
                                 setAddingModel(false);
                                 closeForm();
                             }}
@@ -105,16 +147,19 @@ const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
                                         </Button>
                                     </DropdownTrigger>
                                     <DropdownMenu aria-label="Static Actions">
-                                        <DropdownItem
+                                        {/* <DropdownItem
                                             key="edit"
                                             color="success"
                                         >
                                             Edit Model
-                                        </DropdownItem>
+                                        </DropdownItem> */}
                                         <DropdownItem
                                             key="delete"
                                             className="text-danger"
                                             color="danger"
+                                            onPress={() => {
+                                                handleDelete(item.name);
+                                            }}
                                         >
                                             Delete Model
                                         </DropdownItem>
@@ -129,4 +174,4 @@ const OrionModels = ({ data = [], isLoading, isError, setAddingModel }) => {
     );
 };
 
-export default OrionModels;
+export default OrionModelsTable;

@@ -1,0 +1,1 @@
+Orion::resource('{{ routeName }}', \{{ namespace }}\{{ className }}::class)->middleware(['auth', 'web'])->withSoftDeletes();
