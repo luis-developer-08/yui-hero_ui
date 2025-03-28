@@ -11,6 +11,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import useGenerateTable from "@/Hooks/useGenerateTable";
 import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
+import { v4 as uuidv4 } from "uuid"; // ✅ Generate unique IDs
 
 const DATA_TYPES = [
     { name: "Text", value: "string" },
@@ -34,7 +35,7 @@ const CreateTableForm = () => {
     const { setSelectedRow } = useOrionModelStore();
 
     const [columns, setColumns] = useState([
-        { name: "", type: "string", constraint: "not_nullable" },
+        { id: uuidv4(), name: "", type: "string", constraint: "not_nullable" },
     ]);
 
     const queryClient = useQueryClient();
@@ -51,10 +52,17 @@ const CreateTableForm = () => {
             });
 
             queryClient.invalidateQueries(["orion", "orion-models"]);
-            setSelectedRow(tableName);
+            // setSelectedRow(tableName);
 
             setTableName("");
-            setColumns([{ name: "", type: "string" }]);
+            setColumns([
+                {
+                    id: uuidv4(),
+                    name: "",
+                    type: "string",
+                    constraint: "not_nullable",
+                },
+            ]);
         },
         onError: (error) => {
             addToast({
@@ -67,38 +75,77 @@ const CreateTableForm = () => {
         },
     });
 
+    // ✅ Add a new column with a unique ID
     const handleAddColumn = () => {
-        setColumns([
-            ...columns,
-            { name: "", type: "string", constraint: "not_nullable" },
+        setColumns((prevColumns) => [
+            ...prevColumns,
+            {
+                id: uuidv4(),
+                name: "",
+                type: "string",
+                constraint: "not_nullable",
+            },
         ]);
     };
 
-    const handleRemoveColumn = (index) => {
-        const updatedColumns = columns.filter((_, i) => i !== index);
-        setColumns(updatedColumns);
+    // ✅ Remove column by filtering out the ID
+    const handleRemoveColumn = (id) => {
+        setColumns((prevColumns) => prevColumns.filter((col) => col.id !== id));
     };
 
-    const handleColumnChange = (index, field, value) => {
-        const updatedColumns = [...columns];
-
-        const selectedValue =
+    // ✅ Ensure correct value updates
+    const handleColumnChange = (id, field, value) => {
+        let selectedValue =
             typeof value === "object"
-                ? value.currentKey || value.anchorKey
+                ? value.currentKey || value.anchorKey || value.value
                 : value;
 
-        // Lowercase and replace whitespace with underscores
-        updatedColumns[index][field] =
-            field === "name"
-                ? value.toLowerCase().replace(/\s+/g, "_")
-                : selectedValue;
+        // Convert spaces to underscores only for the "name" field
+        if (field === "name") {
+            selectedValue = selectedValue.toLowerCase().replace(/\s+/g, "_");
+        }
 
-        setColumns(updatedColumns);
+        setColumns((prevColumns) =>
+            prevColumns.map((col) =>
+                col.id === id ? { ...col, [field]: selectedValue } : col
+            )
+        );
     };
+    // const handleSubmit = (e) => {
+    //     e.preventDefault();
+
+    //     const formattedColumns = columns.map((col) => ({
+    //         name: col.name,
+    //         type: col.type, // Now correctly extracting the raw value
+    //         constraint: col.constraint,
+    //     }));
+
+    //     const payload = {
+    //         table_name: tableName,
+    //         columns: formattedColumns,
+    //     };
+
+    //     console.log(payload);
+    //     // generateTable(payload);
+    // };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        generateTable({ tableName, columns });
+
+        // Format table name by replacing spaces with underscores
+        const formattedTableName = tableName.toLowerCase().replace(/\s+/g, "_");
+
+        // Send the properly formatted table name and columns
+
+        // console.log({
+        //     table_name: formattedTableName,
+        //     columns: columns.map(({ id, ...col }) => col), // Remove ID before sending
+        // });
+
+        generateTable({
+            table_name: formattedTableName,
+            columns: columns.map(({ id, ...col }) => col), // Remove ID before sending
+        });
     };
 
     return (
@@ -141,10 +188,11 @@ const CreateTableForm = () => {
                                     Add Column
                                 </Button>
                             </div>
+
                             <div className="overflow-y-auto h-[35vh] space-y-2 md:overflow-y-auto md:scrollbar-thin md:scrollbar-track md:scrollbar-thumb pr-2">
-                                {columns.map((col, index) => (
+                                {columns.map((col) => (
                                     <div
-                                        key={index}
+                                        key={col.id}
                                         className="flex gap-2 justify-between"
                                     >
                                         <Input
@@ -153,7 +201,7 @@ const CreateTableForm = () => {
                                             value={col.name}
                                             onChange={(e) =>
                                                 handleColumnChange(
-                                                    index,
+                                                    col.id,
                                                     "name",
                                                     e.target.value
                                                 )
@@ -167,7 +215,7 @@ const CreateTableForm = () => {
                                             selectedKey={col.type}
                                             onSelectionChange={(value) =>
                                                 handleColumnChange(
-                                                    index,
+                                                    col.id,
                                                     "type",
                                                     value
                                                 )
@@ -191,7 +239,7 @@ const CreateTableForm = () => {
                                             selectedKey={col.constraint}
                                             onSelectionChange={(value) =>
                                                 handleColumnChange(
-                                                    index,
+                                                    col.id,
                                                     "constraint",
                                                     value
                                                 )
@@ -216,7 +264,7 @@ const CreateTableForm = () => {
                                         <Button
                                             color="danger"
                                             onPress={() =>
-                                                handleRemoveColumn(index)
+                                                handleRemoveColumn(col.id)
                                             }
                                             isDisabled={columns.length === 1}
                                             className="rounded-md"

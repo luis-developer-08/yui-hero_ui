@@ -88,13 +88,12 @@ class {{ className }} extends Controller
                 WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?
             ", [$database, $table]);
         } elseif ($connection === 'sqlite') {
-            $columns = DB::select("
-                PRAGMA table_info($table)
-            ");
+            $columns = DB::select("PRAGMA table_info($table)");
 
+            // Map SQLite column structure to match MySQL's format
             $columns = collect($columns)->map(fn($col) => (object)[
                 'name' => $col->name,
-                'type' => $col->type,
+                'type' => $this->mapSqliteTypeToJsonType($col->type),
                 'is_nullable' => $col->notnull ? 'NO' : 'YES'
             ])->toArray();
         } else {
@@ -106,8 +105,8 @@ class {{ className }} extends Controller
             ->map(function ($col) {
                 return [
                     'name' => $col->name,
-                    'type' => $this->mapSchemaTypeToJsonType($col->type),
-                    'nullable' => $col->is_nullable === 'YES' ? true : false
+                    'type' => $col->type,
+                    'nullable' => $col->is_nullable === 'YES'
                 ];
             })->values()->toArray();
     }
@@ -122,6 +121,22 @@ class {{ className }} extends Controller
             'date' => 'date',                 // Separate date and datetime
             'time' => 'time',                 // Add support for time type
             default => 'string',
+        };
+    }
+
+    private function mapSqliteTypeToJsonType(string $type): string
+    {
+        $type = strtolower($type);
+
+        return match (true) {
+            str_contains($type, 'int') => 'integer',
+            str_contains($type, 'varchar') || str_contains($type, 'text') => 'string',
+            str_contains($type, 'real') || str_contains($type, 'double') => 'float',
+            str_contains($type, 'boolean') => 'boolean',
+            str_contains($type, 'datetime') => 'datetime',
+            str_contains($type, 'date') => 'date',
+            str_contains($type, 'time') => 'time',
+            default => 'string',  // Fallback type
         };
     }
 }

@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 
 const useGenerateTable = (options = {}) => {
-    const generateTable = async ({ tableName, columns }) => {
-        const normalizedTableName = tableName
+    const generateTable = async ({ table_name, columns }) => {
+        const normalizedTableName = table_name // ✅ Match the key
             .trim()
             .toLowerCase()
             .replace(/\s+/g, "_");

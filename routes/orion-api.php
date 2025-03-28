@@ -10,3 +10,5 @@ Orion::resource('orion-models', OrionModelController::class)->middleware(['auth'
 Orion::resource('users', \App\Http\Controllers\Orion\UserController::class)->middleware(['auth', 'web'])->withSoftDeletes();
 Route::post('generate-table', [TableGeneratorController::class, 'generate'])->middleware(['auth', 'web']);
 Route::delete('remove-table', [TableRemoverController::class, 'removeTable'])->middleware(['auth', 'web']);
+
+

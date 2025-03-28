@@ -158,7 +158,14 @@ const OrionModelsTable = ({
                                             className="text-danger"
                                             color="danger"
                                             onPress={() => {
-                                                handleDelete(item.name);
+                                                item.name === "users"
+                                                    ? addToast({
+                                                          title: "WARNING",
+                                                          description:
+                                                              "For your safety! DO NOT delete this model!",
+                                                          color: "danger",
+                                                      })
+                                                    : handleDelete(item.name);
                                             }}
                                         >
                                             Delete Model
