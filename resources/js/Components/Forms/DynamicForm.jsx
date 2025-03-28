@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Button,
     Form,
@@ -12,21 +12,26 @@ import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
 import useOrionFetch from "@/Hooks/useOrionFetch";
 import useOrionPost from "@/Hooks/useOrionPost";
 import { useQueryClient } from "@tanstack/react-query";
+import useDynamicFormStore from "@/ZustandStores/useDynamicFormStore";
+import useSelectedRowStore from "@/ZustandStores/useSelectedRowStore";
+import useOrionPatch from "@/Hooks/useOrionPatch";
 
-const DynamicForm = ({ setAddingRow }) => {
+const DynamicForm = () => {
     const { selectedRow } = useOrionModelStore();
     const { data, isLoading, isError } = useOrionFetch(selectedRow);
     const queryClient = useQueryClient();
+    const { closeForm, method } = useDynamicFormStore();
+    const { selectedRowData } = useSelectedRowStore(); // ✅ Selected row data
 
-    const { mutate, isLoading: isPosting } = useOrionPost(selectedRow, {
+    const { mutate: post, isLoading: isPosting } = useOrionPost(selectedRow, {
         onSuccess: (response) => {
             if (response) {
                 addToast({
                     title: "Status",
-                    description: "A record is succesfully added.",
+                    description: "A record is successfully saved.",
                 });
                 queryClient.invalidateQueries(["orion", selectedRow]);
-                setAddingRow(false);
+                closeForm();
             }
         },
         onError: (error) => {
@@ -34,7 +39,37 @@ const DynamicForm = ({ setAddingRow }) => {
         },
     });
 
+    const { mutate: patch, isLoading: isPatching } = useOrionPatch(
+        selectedRow,
+        {
+            onSuccess: (response) => {
+                if (response) {
+                    console.log(response);
+                    addToast({
+                        title: "Status",
+                        description: "A record is successfully updated.",
+                    });
+                    queryClient.invalidateQueries(["orion", selectedRow]);
+                    closeForm();
+                }
+            },
+            onError: (error) => {
+                console.log(error);
+            },
+        }
+    );
+
+    // ✅ Initialize formData with selected row data (for editing) or empty form (for creating)
     const [formData, setFormData] = useState({});
+
+    // ✅ Load selected row data into form on mount or row change
+    useEffect(() => {
+        if (selectedRowData) {
+            setFormData(selectedRowData); // Pre-fill with selected row data
+        } else {
+            setFormData({}); // Empty form for creating
+        }
+    }, [selectedRowData]);
 
     if (isLoading) {
         return (
@@ -57,7 +92,7 @@ const DynamicForm = ({ setAddingRow }) => {
             type: getInputTypeByName(col.name, col.type),
         }));
 
-    // Handle input changes
+    // ✅ Handle input changes
     const handleChange = (key, value) => {
         setFormData((prev) => ({
             ...prev,
@@ -68,10 +103,18 @@ const DynamicForm = ({ setAddingRow }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         const payload = { ...formData };
+
         if (selectedRow === "users" && formData.password) {
             payload.password = formData.password;
         }
-        mutate(payload);
+
+        if (method === "post") {
+            post(payload);
+        }
+
+        if (method === "patch") {
+            patch(payload);
+        }
     };
 
     return (
@@ -94,7 +137,7 @@ const DynamicForm = ({ setAddingRow }) => {
                                             {col.label}
                                         </label>
 
-                                        {/* Render appropriate field types */}
+                                        {/* ✅ Populate fields with formData */}
                                         {col.type === "boolean" ? (
                                             <Checkbox
                                                 isSelected={!!formData[col.key]}
@@ -166,12 +209,20 @@ const DynamicForm = ({ setAddingRow }) => {
 
                     <Button
                         type="submit"
-                        color="secondary"
+                        color={`${method === "post" ? "secondary" : "success"}`}
                         className="w-full rounded-md"
-                        isDisabled={isPosting}
-                        isLoading={isPosting}
+                        isDisabled={method === "post" ? isPosting : isPatching}
+                        isLoading={method === "post" ? isPosting : isPatching}
                     >
-                        {isPosting ? "Creating..." : "Create"}
+                        {`${
+                            method === "post"
+                                ? isPosting
+                                    ? "Creating..."
+                                    : "Create"
+                                : isPatching
+                                ? "Updating..."
+                                : "Update"
+                        }`}
                     </Button>
                 </Form>
             </div>

@@ -96,7 +96,8 @@ const GettingStarted = () => {
                                     >
                                         <span className="text-wrap">
                                             [0] None <br />
-                                            [1] Hero UI
+                                            [1] Hero UI <br />
+                                            [1] shadcn/ui
                                         </span>
                                     </Code>
 

@@ -62,7 +62,10 @@ class MakeOrionController extends Command
             public function index(Request \$request)
             {
                 \$query = \$this->buildIndexFetchQuery(\$request, []);
-                \$items = \$query->get();
+
+                \$perPage = \$request->get('per_page', 10);
+                // Select only id, name, and email (exclude sensitive data)
+                \$items = \$query->paginate(\$perPage);
 
                 // Get fillable columns
                 \$fillable = (new {$modelName}())->getFillable();
@@ -76,7 +79,15 @@ class MakeOrionController extends Command
 
                 \$response = [
                     'columns' => \$columns,
-                    'data' => \$items->map(fn(\$cols) => \$cols->only(\$fillable))
+                    'data' => \$items->map(fn(\$cols) => \$cols->only(\$fillable)),
+                    'pagination' => [                         // ✅ Pagination metadata
+                        'total' => \$items->total(),
+                        'per_page' => \$items->perPage(),
+                        'current_page' => \$items->currentPage(),
+                        'last_page' => \$items->lastPage(),
+                        'from' => \$items->firstItem(),
+                        'to' => \$items->lastItem(),
+                    ]
                 ];
 
                 return response()->json(\$response);
