@@ -30,6 +30,10 @@ class TableGeneratorController extends Controller
         if ($this->updateMigrationFile(Str::plural(Str::snake($tableName)), $columns)) {
             $this->updateModelFile($capitalizeTableName, $columns);
 
+            // return response()->json([
+            //     'message' => $message,
+            // ]);
+
             // Run the migration
             Artisan::call('migrate');
             Artisan::call('route:clear');
@@ -69,13 +73,21 @@ class TableGeneratorController extends Controller
         foreach ($columns as $column) {
             $name = $column['name'];
             $type = $column['type'];
+            $constraint = $column['constraint'];
 
             if (str_contains($type, ':')) {
                 [$baseType, $params] = explode(':', $type, 2);
-                $schema .= "\$table->$baseType('$name', $params);\n";
+                $schema .= "\$table->$baseType('$name', $params)";
             } else {
-                $schema .= "\$table->$type('$name');\n";
+                $schema .= "\$table->$type('$name')";
             }
+
+            // ✅ Apply nullable or not nullable constraint
+            if ($constraint === 'nullable') {
+                $schema .= "->nullable()";
+            }
+
+            $schema .= ";\n";
         }
 
         // Inject the columns into the migration file
@@ -92,39 +104,68 @@ class TableGeneratorController extends Controller
 
     private function updateModelFile($modelName, $columns)
     {
-        // Ensure model name is capitalized (e.g., User instead of user)
-        $modelPath = app_path("Models/Orion/{$modelName}.php");
+        try {
+            // Ensure model name is capitalized (e.g., User instead of user)
+            $modelPath = app_path("Models/Orion/{$modelName}.php");
 
-        if (!File::exists($modelPath)) {
-            return false;
+            // ✅ Check if the model file exists
+            if (!File::exists($modelPath)) {
+                return [
+                    'error' => "Model file not found: {$modelPath}"
+                ];
+            }
+
+            // Extract column names for fillable
+            $fillable = collect($columns)->pluck('name')->map(fn($col) => "'$col'")->implode(', ');
+
+            // ✅ Read model content
+            $modelContent = file_get_contents($modelPath);
+
+            if ($modelContent === false) {
+                return [
+                    'error' => "Failed to read model file: {$modelPath}"
+                ];
+            }
+
+            // ✅ Check if $fillable already exists
+            if (str_contains($modelContent, 'protected $fillable')) {
+                // Replace the existing fillable line
+                $modelContent = preg_replace(
+                    '/protected \$fillable = \[.*?\];/s',
+                    "protected \$fillable = [{$fillable}];",
+                    $modelContent
+                );
+            } else {
+                // Add fillable property after `use HasFactory;`
+                $modelContent = preg_replace(
+                    '/use HasFactory, SoftDeletes;\n/',
+                    "use HasFactory, SoftDeletes;\n\n    protected \$fillable = [{$fillable}];\n",
+                    $modelContent
+                );
+            }
+
+            // ✅ Write the updated model content back
+            $result = file_put_contents($modelPath, $modelContent);
+
+            if ($result === false) {
+                return [
+                    'error' => "Failed to write to model file: {$modelPath}"
+                ];
+            }
+
+            return [
+                'message' => "Model updated successfully!",
+                'model' => $modelName,
+                'path' => $modelPath,
+                'fillable' => $fillable,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'error' => 'Exception occurred while updating model',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ];
         }
-
-        // Extract column names for fillable
-        $fillable = collect($columns)->pluck('name')->map(fn($col) => "'$col'")->implode(', ');
-
-        // Read model content
-        $modelContent = file_get_contents($modelPath);
-
-        // Check if $fillable already exists
-        if (str_contains($modelContent, 'protected $fillable')) {
-            // Replace the existing fillable line
-            $modelContent = preg_replace(
-                '/protected \$fillable = \[.*?\];/s',
-                "protected \$fillable = [{$fillable}];",
-                $modelContent
-            );
-        } else {
-            // Add fillable property after `use HasFactory;`
-            $modelContent = preg_replace(
-                '/use HasFactory;\n/',
-                "use HasFactory;\n\n    protected \$fillable = [{$fillable}];\n",
-                $modelContent
-            );
-        }
-
-        // Write the updated model content back
-        file_put_contents($modelPath, $modelContent);
-
-        return true;
     }
 }

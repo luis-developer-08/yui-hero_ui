@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 const useOrionFetch = (model, queryParams = {}, options = {}) => {
     const fetchData = async () => {

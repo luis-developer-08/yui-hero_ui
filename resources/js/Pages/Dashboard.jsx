@@ -1,9 +1,17 @@
+import { FaEllipsisV, FaFileUpload } from "react-icons/fa";
 import { AiOutlineSearch, AiOutlineClose, AiOutlinePlus } from "react-icons/ai";
 import MainLayout from "@/Layouts/MainLayout";
 import { Head } from "@inertiajs/react";
 import SectionCard from "@/Components/SectionCard";
 import OrionModelsTable from "@/Components/Tables/OrionModelsTable";
-import { Button, Input } from "@heroui/react";
+import {
+    Button,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
+    Input,
+} from "@heroui/react";
 import useOrionFetch from "@/Hooks/useOrionFetch";
 import DynamicTable from "@/Components/Tables/DynamicTable";
 import { useState, useCallback } from "react";
@@ -14,16 +22,20 @@ import DynamicForm from "@/Components/Forms/DynamicForm";
 import useDynamicFormStore from "@/ZustandStores/useDynamicFormStore";
 import useSelectedRowStore from "@/ZustandStores/useSelectedRowStore";
 import _ from "lodash"; // ✅ Import lodash
+import useOrionSearch from "@/Hooks/useOrionSearch";
 
 export default function Dashboard() {
-    const { data, isLoading, isError } = useOrionFetch("orion-models");
-    const [addingModel, setAddingModel] = useState(false);
+    const { data, isLoading, isError } = useOrionSearch("orion-models");
     const { isOpen, openForm, closeForm, setMethod } = useDynamicFormStore();
     const { selectedRow } = useOrionModelStore();
     const { clearSelectedRowData } = useSelectedRowStore();
 
     const [filterValue, setFilterValue] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [isTrashed, setIsTrashed] = useState(false);
+    const [selectedKeys, setSelectedKeys] = useState(new Set());
+    const [totalSelectedRows, setTotalSelectedRows] = useState("0");
+    const [addingModel, setAddingModel] = useState(false);
 
     // ✅ Debounced handler
     const debouncedFilterChange = useCallback(
@@ -93,31 +105,102 @@ export default function Dashboard() {
                                                 <h2 className="text-xl font-semibold">
                                                     {selectedRow}
                                                 </h2>
-                                                {isOpen ? (
+                                                {isOpen || isTrashed ? (
                                                     <Button
                                                         color="danger"
                                                         className="rounded-md"
                                                         size="sm"
-                                                        onPress={() =>
-                                                            closeForm()
-                                                        }
+                                                        onPress={() => {
+                                                            closeForm();
+                                                            setFilterValue("");
+                                                            setIsTrashed(false);
+                                                            setSelectedKeys(
+                                                                new Set()
+                                                            );
+                                                            setTotalSelectedRows(
+                                                                0
+                                                            );
+                                                        }}
                                                     >
                                                         <AiOutlineClose />
                                                     </Button>
                                                 ) : (
-                                                    <Button
-                                                        color="primary"
-                                                        className="rounded-md"
-                                                        size="sm"
-                                                        onPress={() => {
-                                                            clearSelectedRowData();
-                                                            setMethod("post");
-                                                            openForm();
-                                                            setFilterValue("");
-                                                        }}
-                                                    >
-                                                        <AiOutlinePlus />
-                                                    </Button>
+                                                    <div className="space-x-1 flex">
+                                                        {/* <Input
+                                                            type="file"
+                                                            className="button"
+                                                            typeof="button"
+                                                            radius="sm"
+                                                            size="sm"
+                                                        />
+                                                        <Button
+                                                            color="primary"
+                                                            className="rounded-md"
+                                                            size="sm"
+                                                            onPress={() => {
+                                                                clearSelectedRowData();
+                                                                setMethod(
+                                                                    "post"
+                                                                );
+                                                                openForm();
+                                                                setFilterValue(
+                                                                    ""
+                                                                );
+                                                            }}
+                                                        >
+                                                            <FaFileUpload
+                                                                size={20}
+                                                            />
+                                                        </Button> */}
+
+                                                        <Dropdown>
+                                                            <DropdownTrigger>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    className="rounded-md border-none"
+                                                                    size="sm"
+                                                                >
+                                                                    <FaEllipsisV className="text-gray-500" />
+                                                                </Button>
+                                                            </DropdownTrigger>
+                                                            <DropdownMenu aria-label="Static Actions">
+                                                                <DropdownItem
+                                                                    key="new-record"
+                                                                    onPress={() => {
+                                                                        clearSelectedRowData();
+                                                                        setMethod(
+                                                                            "post"
+                                                                        );
+                                                                        openForm();
+                                                                    }}
+                                                                >
+                                                                    New Record
+                                                                </DropdownItem>
+                                                                <DropdownItem
+                                                                    key="show-deleted-users"
+                                                                    onPress={() => {
+                                                                        setCurrentPage(
+                                                                            1
+                                                                        );
+                                                                        setIsTrashed(
+                                                                            true
+                                                                        );
+                                                                        setSelectedKeys(
+                                                                            new Set()
+                                                                        );
+                                                                        setTotalSelectedRows(
+                                                                            0
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    Show deleted{" "}
+                                                                    {
+                                                                        selectedRow
+                                                                    }
+                                                                </DropdownItem>
+                                                            </DropdownMenu>
+                                                        </Dropdown>
+                                                    </div>
                                                 )}
                                             </div>
                                             {isOpen ? (
@@ -133,7 +216,11 @@ export default function Dashboard() {
                                                     }}
                                                     className="h-full"
                                                 >
-                                                    <DynamicForm />
+                                                    <DynamicForm
+                                                        setFilterValue={
+                                                            setFilterValue
+                                                        }
+                                                    />
                                                 </motion.div>
                                             ) : (
                                                 <>
@@ -151,16 +238,6 @@ export default function Dashboard() {
                                                     </div>
                                                     <motion.div
                                                         key={`dynamic-table-${selectedRow}`}
-                                                        variants={
-                                                            contentVariants
-                                                        }
-                                                        initial="hidden"
-                                                        animate="visible"
-                                                        exit="exit"
-                                                        transition={{
-                                                            duration: 0.2,
-                                                            ease: "easeInOut",
-                                                        }}
                                                     >
                                                         <DynamicTable
                                                             filterValue={
@@ -171,6 +248,21 @@ export default function Dashboard() {
                                                             }
                                                             setCurrentPage={
                                                                 setCurrentPage
+                                                            }
+                                                            isTrashed={
+                                                                isTrashed
+                                                            }
+                                                            selectedKeys={
+                                                                selectedKeys
+                                                            }
+                                                            setSelectedKeys={
+                                                                setSelectedKeys
+                                                            }
+                                                            totalSelectedRows={
+                                                                totalSelectedRows
+                                                            }
+                                                            setTotalSelectedRows={
+                                                                setTotalSelectedRows
                                                             }
                                                         />
                                                     </motion.div>
@@ -190,6 +282,8 @@ export default function Dashboard() {
                                 isLoading={isLoading}
                                 isError={isError}
                                 data={data}
+                                setSelectedKeys={setSelectedKeys}
+                                setTotalSelectedRows={setTotalSelectedRows}
                             />
                         </div>
 
