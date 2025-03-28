@@ -1,9 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
 
 const useOrionDelete = (model, options = {}) => {
-    const deleteData = async (id) => {
-        const url = `/api/${model}/${id}`;
+    const deleteData = async (data) => {
+        const url = `/api/${model}/${data.id}?force=${data.force}`;
 
         const { status } = await axios.delete(url);
 

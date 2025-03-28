@@ -68,12 +68,18 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        // ✅ Extract search query from the nested payload
+        // ✅ Extract parameters
         $searchQuery = $request->input('search.value', '');
         $perPage = $request->get('per_page', 10);
+        $onlyTrashed = $request->boolean('only_trashed', false);  // Check for soft deletes
 
         // ✅ Build the base query
         $query = $this->buildIndexFetchQuery($request, []);
+
+        // ✅ Handle soft deletes
+        if ($onlyTrashed) {
+            $query->onlyTrashed();
+        }
 
         // ✅ Apply search filtering if search.value exists
         if (!empty($searchQuery)) {
@@ -91,14 +97,14 @@ class UserController extends Controller
         $columns = [
             ['name' => 'id', 'type' => 'integer'],
             ['name' => 'name', 'type' => 'string'],
-            ['name' => 'email', 'type' => 'string']
+            ['name' => 'email', 'type' => 'string'],
         ];
 
         // ✅ Prepare the response with pagination and search results
         $response = [
             'columns' => $columns,
-            'data' => $items->items(),                // ✅ Paginated search results
-            'pagination' => [                         // ✅ Pagination metadata
+            'data' => $items->items(),
+            'pagination' => [
                 'total' => $items->total(),
                 'per_page' => $items->perPage(),
                 'current_page' => $items->currentPage(),
@@ -110,6 +116,7 @@ class UserController extends Controller
 
         return response()->json($response);
     }
+
 
     private function getColumnTypeFromSchema(string $table, string $column): string
     {
