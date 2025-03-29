@@ -26,7 +26,7 @@ export default function Register() {
 
             <Card
                 isBlurred
-                className="border-none bg-white/70 dark:bg-default-100/50 p-2 md:p-5 w-full rounded-none md:rounded-2xl md:w-5/12"
+                className="border-none bg-white/70 dark:bg-default-100/50 p-2 md:p-5 w-full rounded-none md:rounded-2xl md:w-7/12"
                 shadow="sm"
             >
                 <CardBody className="overflow-visible py-2">
@@ -137,7 +137,7 @@ export default function Register() {
                                         className="ms-4"
                                         disabled={processing}
                                     >
-                                        Register
+                                        Sign up
                                     </PrimaryButton>
                                 </div>
                             </Form>

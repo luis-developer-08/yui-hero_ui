@@ -12,7 +12,6 @@ import {
     DropdownTrigger,
     Input,
 } from "@heroui/react";
-import useOrionFetch from "@/Hooks/useOrionFetch";
 import DynamicTable from "@/Components/Tables/DynamicTable";
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -85,7 +84,9 @@ export default function Dashboard() {
                                         }}
                                         className="h-full"
                                     >
-                                        <CreateTableForm />
+                                        <CreateTableForm
+                                            orion_models={data.data}
+                                        />
                                     </motion.div>
                                 ) : (
                                     <motion.div

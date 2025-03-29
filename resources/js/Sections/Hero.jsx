@@ -54,12 +54,13 @@ const Hero = () => {
                     </div>
 
                     <div className="relative col-span-6 md:col-span-4 flex flex-col items-center">
-                        <Image
-                            alt="Card background"
-                            className="object-cover rounded-xl"
-                            src="../images/yui.png"
-                            width={270}
-                        />
+                        <div className="h-72">
+                            <Image
+                                alt="Card background"
+                                className="object-cover rounded-xl w-64"
+                                src="../images/yui.png"
+                            />
+                        </div>
 
                         <div className="flex gap-2 mt-10">
                             <Button

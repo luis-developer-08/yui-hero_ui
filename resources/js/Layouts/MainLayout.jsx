@@ -12,7 +12,7 @@ const MainLayout = ({ children }) => {
         >
             <NavbarHUI user={user} />
             <main className="flex-1 md:overflow-y-auto md:scrollbar-thin md:scrollbar-track md:scrollbar-thumb">
-                <div className="md:px-40 min-h-[92vh]">{children}</div>
+                <div className="min-h-[92vh]">{children}</div>
             </main>
         </div>
     );

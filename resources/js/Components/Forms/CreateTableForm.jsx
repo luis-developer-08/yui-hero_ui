@@ -1,17 +1,25 @@
+import { RiEmotionNormalFill } from "react-icons/ri";
+import { GiUpgrade } from "react-icons/gi";
 import React, { useState } from "react";
 import {
     addToast,
     Button,
     Divider,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
     Form,
     Input,
     Select,
     SelectItem,
+    Switch,
 } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import useGenerateTable from "@/Hooks/useGenerateTable";
 import useOrionModelStore from "@/ZustandStores/useOrionModelStore";
-import { v4 as uuidv4 } from "uuid"; // ✅ Generate unique IDs
+import { v4 as uuidv4 } from "uuid";
+import { FaEllipsisV } from "react-icons/fa";
 
 const DATA_TYPES = [
     { name: "Text", value: "string" },
@@ -30,13 +38,28 @@ const CONSTRAINTS_TYPES = [
     { name: "Is not Required", value: "nullable" },
 ];
 
-const CreateTableForm = () => {
+const FOREIGN_KEY_OPTIONS = [
+    { name: "Users → id", value: "users.id" },
+    { name: "Products → id", value: "products.id" },
+    { name: "Categories → id", value: "categories.id" },
+];
+
+const CreateTableForm = ({ orion_models }) => {
     const [tableName, setTableName] = useState("");
-    const { setSelectedRow } = useOrionModelStore();
+    // const { setSelectedRow } = useOrionModelStore();
+
+    // console.log(orion_models);
 
     const [columns, setColumns] = useState([
-        { id: uuidv4(), name: "", type: "string", constraint: "not_nullable" },
+        {
+            id: uuidv4(),
+            name: "",
+            type: "string",
+            constraint: "not_nullable",
+            foreign_key: null,
+        },
     ]);
+    const [isAdvanced, setIsAdvanced] = useState(false);
 
     const queryClient = useQueryClient();
     const {
@@ -111,23 +134,6 @@ const CreateTableForm = () => {
             )
         );
     };
-    // const handleSubmit = (e) => {
-    //     e.preventDefault();
-
-    //     const formattedColumns = columns.map((col) => ({
-    //         name: col.name,
-    //         type: col.type, // Now correctly extracting the raw value
-    //         constraint: col.constraint,
-    //     }));
-
-    //     const payload = {
-    //         table_name: tableName,
-    //         columns: formattedColumns,
-    //     };
-
-    //     console.log(payload);
-    //     // generateTable(payload);
-    // };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -137,23 +143,35 @@ const CreateTableForm = () => {
 
         // Send the properly formatted table name and columns
 
-        // console.log({
-        //     table_name: formattedTableName,
-        //     columns: columns.map(({ id, ...col }) => col), // Remove ID before sending
-        // });
+        const formattedColumns = columns.map(({ id, ...col }) => ({
+            ...col,
+            foreign_key: col.foreign_key || null, // Ensure null if no foreign key is selected
+        }));
 
-        generateTable({
+        console.log({
             table_name: formattedTableName,
-            columns: columns.map(({ id, ...col }) => col), // Remove ID before sending
+            columns: formattedColumns,
         });
+
+        // generateTable({
+        //     table_name: formattedTableName,
+        //     columns: formattedColumns,
+        // });
     };
 
     return (
-        <div className="h-full flex flex-col">
-            <div>
-                <h2 className="text-xl font-semibold mb-4 capitalize bg-white rounded-md py-2 px-4">
-                    Create Model
-                </h2>
+        <div className="h-full flex flex-col w-full">
+            <div className="flex justify-between mb-4 capitalize bg-white rounded-md py-2 px-4">
+                <h2 className="text-xl font-semibold">Create Model</h2>
+
+                <Switch
+                    defaultSelected={false}
+                    color="secondary"
+                    size="sm"
+                    onChange={(e) => setIsAdvanced(e.target.checked)}
+                >
+                    Advance Mode
+                </Switch>
             </div>
             <div className="flex-1">
                 <Form
@@ -206,7 +224,7 @@ const CreateTableForm = () => {
                                                     e.target.value
                                                 )
                                             }
-                                            className="w-2/3"
+                                            className="w-1/3"
                                             isRequired
                                             size="sm"
                                         />
@@ -260,6 +278,37 @@ const CreateTableForm = () => {
                                                 )
                                             )}
                                         </Select>
+
+                                        {isAdvanced ? (
+                                            <Select
+                                                selectedKey={
+                                                    col.foreign_key || ""
+                                                }
+                                                onSelectionChange={(value) =>
+                                                    handleColumnChange(
+                                                        col.id,
+                                                        "foreign_key",
+                                                        value
+                                                    )
+                                                }
+                                                className="w-1/4"
+                                                label="Foreign Key"
+                                                size="sm"
+                                            >
+                                                <SelectItem key="" value="">
+                                                    None
+                                                </SelectItem>
+                                                {orion_models.map((fk) => (
+                                                    <SelectItem
+                                                        key={fk.name}
+                                                        value={fk.name}
+                                                        className="capitalize"
+                                                    >
+                                                        {fk.name + " → → id"}
+                                                    </SelectItem>
+                                                ))}
+                                            </Select>
+                                        ) : null}
 
                                         <Button
                                             color="danger"

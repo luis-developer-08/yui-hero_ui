@@ -8,31 +8,23 @@ use Illuminate\Filesystem\Filesystem;
 class MakeInertiaComponent extends Command
 {
     protected $signature = 'make:inertia {name}
-                            {--c|--components : Create in Components}
-                            {--l|--layouts : Create in Layouts}
-                            {--s|--sections : Create in Sections}
-                            {--p|--pages : Create in Pages}';
+                            {--c|components : Create in Components}
+                            {--l|layouts : Create in Layouts}
+                            {--s|sections : Create in Sections}
+                            {--p|pages : Create in Pages}';
 
     protected $description = 'Create a new React component with optional folder flag or path';
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     public function handle()
     {
         $name = $this->argument('name');
         $filesystem = new Filesystem();
 
-        // Extract folder and component name correctly
+        // Determine folder and component name
         $folder = $this->getFolder($name);
         $componentName = basename($name);
 
-        // Determine the final path properly
         $componentPath = resource_path("js/{$folder}/{$name}.jsx");
-
-        // Prevent duplicate folder nesting
         $cleanPath = str_replace("/{$folder}/{$folder}", "/{$folder}", $componentPath);
 
         if ($filesystem->exists($cleanPath)) {
@@ -41,7 +33,12 @@ class MakeInertiaComponent extends Command
         }
 
         $filesystem->ensureDirectoryExists(dirname($cleanPath));
-        $filesystem->put($cleanPath, $this->getComponentTemplate($componentName));
+
+        // Load stub and replace the placeholder
+        $stub = $filesystem->get(resource_path('stubs/inertia-component.stub'));
+        $componentTemplate = str_replace('{{name}}', $componentName, $stub);
+
+        $filesystem->put($cleanPath, $componentTemplate);
 
         $this->info("✅ React component created successfully at: {$cleanPath}");
         $this->openFile($cleanPath);
@@ -62,29 +59,8 @@ class MakeInertiaComponent extends Command
             return 'Pages';
         }
 
-        // If no flag is provided, use the first part of the path as folder
         $parts = explode('/', $name);
         return (count($parts) > 1) ? $parts[0] : 'Components';
-    }
-
-    /**
-     * Generate the component template with the correct name
-     */
-    protected function getComponentTemplate($name)
-    {
-        return <<<JSX
-import React from 'react';
-
-const {$name} = () => {
-    return (
-        <div>
-            {/* {$name} component */}
-        </div>
-    );
-};
-
-export default {$name};
-JSX;
     }
 
     /**

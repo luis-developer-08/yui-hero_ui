@@ -8,7 +8,7 @@ import React from "react";
 
 const Home = () => {
     return (
-        <div className="min-h-screen overflow-auto-y py-5">
+        <div className="min-h-screen overflow-auto-y py-5 md:px-10 lg:px-40">
             <Head title="Home" />
             <Hero />
             <Features />

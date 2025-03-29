@@ -123,7 +123,7 @@ const NavbarHUI = ({ user }) => {
                                     radius="sm"
                                     onPress={() => router.visit(route("login"))}
                                 >
-                                    Login
+                                    Sign in
                                 </Button>
                             </NavbarItem>
                             <NavbarItem>
@@ -134,7 +134,7 @@ const NavbarHUI = ({ user }) => {
                                         router.visit(route("register"))
                                     }
                                 >
-                                    Sign In
+                                    Sign up
                                 </Button>
                             </NavbarItem>
                         </>

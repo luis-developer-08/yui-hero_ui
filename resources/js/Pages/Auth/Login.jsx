@@ -32,20 +32,20 @@ export default function Login({ status, canResetPassword }) {
 
             <Card
                 isBlurred
-                className="border-none bg-white/70 dark:bg-default-100/50 p-2 md:p-5 w-full rounded-none md:rounded-2xl md:w-5/12"
+                className="border-none bg-white/70 dark:bg-default-100/50 p-2 md:p-5 w-full rounded-none md:rounded-2xl md:w-7/12"
                 shadow="sm"
             >
                 <CardBody className="overflow-visible py-2">
                     <div className="grid grid-cols-6 md:grid-cols-12 gap-4 md:gap-10 items-center justify-center">
                         <div className="flex flex-col col-span-6 md:col-span-12">
                             <Form onSubmit={submit}>
-                                <div className="w-full">
+                                <div className=" w-full">
                                     <Input
                                         id="email"
                                         type="email"
                                         name="email"
                                         value={data.email}
-                                        className="mt-1 block w-full"
+                                        className="mt-1 w-full"
                                         autoComplete="username"
                                         isFocused={true}
                                         onChange={(e) =>
@@ -115,7 +115,7 @@ export default function Login({ status, canResetPassword }) {
                                         className="ms-4"
                                         disabled={processing}
                                     >
-                                        Log in
+                                        Sign in
                                     </PrimaryButton>
                                 </div>
                             </Form>
